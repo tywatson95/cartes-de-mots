@@ -101,6 +101,10 @@
   .done-state h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 300; margin-bottom: 8px; }
   .done-state p { font-size: 0.8rem; color: var(--clay); margin-bottom: 20px; line-height: 1.5; }
   .btn-restart { background: var(--dark); color: var(--cream); border: none; border-radius: 10px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; letter-spacing: 0.05em; }
+
+  .data-actions { display: flex; justify-content: center; gap: 22px; width: 100%; max-width: 380px; margin-top: 22px; }
+  .data-link { background: none; border: none; color: var(--clay); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; padding: 6px 4px; font-family: 'DM Sans', sans-serif; font-weight: 500; opacity: 0.7; transition: opacity 0.2s; }
+  .data-link:hover { opacity: 1; }
 </style>
 </head>
 <body>
@@ -136,6 +140,12 @@
       <button class="btn-add" id="saveBtn" onclick="saveCard()">Add card</button>
     </div>
   </div>
+</div>
+
+<div class="data-actions">
+  <button class="data-link" onclick="exportData()">Export</button>
+  <button class="data-link" onclick="importData()">Import</button>
+  <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="handleImportFile(event)" />
 </div>
 
 <script>
@@ -801,6 +811,48 @@ function saveCard() {
   closeAddForm();
   currentDeck = targetDeck;
   if (mode === 'study') initDeck(); else render();
+}
+
+function exportData() {
+  saveDecks();
+  const payload = {
+    format: "cartes-de-mots/v1",
+    exported_at: new Date().toISOString(),
+    decks: JSON.parse(localStorage.getItem('cartesDeMots_decks') || '{}')
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `cartes-de-mots-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function importData() {
+  document.getElementById('importFile').click();
+}
+
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let payload;
+    try { payload = JSON.parse(e.target.result); }
+    catch { alert("Couldn't read this file — it isn't valid JSON."); return; }
+    if (!payload || payload.format !== 'cartes-de-mots/v1' || typeof payload.decks !== 'object') {
+      alert("That doesn't look like a Cartes de Mots backup file.");
+      return;
+    }
+    if (!confirm('Replace your current cards with this backup? Your edits, additions and deletions will be overwritten.')) return;
+    localStorage.setItem('cartesDeMots_decks', JSON.stringify(payload.decks));
+    location.reload();
+  };
+  reader.readAsText(file);
 }
 
 populateCategorySelect();
