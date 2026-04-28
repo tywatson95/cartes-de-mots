@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cartes de Mots</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --cream: #F7F3EE; --warm: #EDE5D8; --sand: #D4C5B0;
+    --clay: #9B7E6A; --dark: #2C2420; --accent: #7A6652;
+    --green: #5C7A62; --rust: #B5654A; --shadow: rgba(44,36,32,0.08);
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream); color: var(--dark);
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; padding: 20px 16px 60px;
+  }
+  header { text-align: center; margin-bottom: 24px; width: 100%; }
+  .app-title { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; letter-spacing: 0.05em; }
+  .app-subtitle { font-size: 0.7rem; color: var(--clay); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 4px; font-weight: 500; }
+  .progress-bar { width: 100%; max-width: 380px; height: 2px; background: var(--sand); border-radius: 2px; margin: 14px auto 0; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--clay); border-radius: 2px; transition: width 0.4s ease; }
+  .card-counter { font-size: 0.68rem; color: var(--clay); text-align: center; margin-top: 7px; letter-spacing: 0.08em; }
+
+  .deck-tabs { display: flex; gap: 8px; width: 100%; max-width: 380px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .deck-tabs::-webkit-scrollbar { display: none; }
+  .deck-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--sand); background: none; font-family: 'DM Sans', sans-serif; font-size: 0.74rem; color: var(--clay); cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s; white-space: nowrap; }
+  .deck-tab.active { background: var(--dark); color: var(--cream); border-color: var(--dark); }
+  .deck-tab .count { opacity: 0.55; font-size: 0.7rem; margin-left: 4px; }
+
+  .mode-toggle { display: flex; gap: 4px; width: 100%; max-width: 380px; margin-bottom: 18px; background: var(--warm); border-radius: 10px; padding: 3px; }
+  .mode-btn { flex: 1; padding: 8px; border: none; background: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.74rem; color: var(--clay); cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
+  .mode-btn.active { background: white; color: var(--dark); box-shadow: 0 1px 3px var(--shadow); }
+
+  .card-scene { width: 100%; max-width: 380px; height: 280px; perspective: 1000px; cursor: pointer; margin-bottom: 22px; }
+  .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .card-inner.flipped { transform: rotateY(180deg); }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px; }
+  .card-front { background: white; border: 1px solid var(--warm); box-shadow: 0 4px 24px var(--shadow); }
+  .card-back { background: var(--dark); transform: rotateY(180deg); box-shadow: 0 4px 24px rgba(44,36,32,0.15); }
+  .card-label { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; color: var(--sand); }
+  .card-word { font-family: 'Cormorant Garamond', serif; font-size: 1.95rem; font-weight: 300; text-align: center; line-height: 1.2; color: var(--dark); padding: 0 8px; }
+  .card-back .card-word { color: var(--cream); font-size: 1.65rem; }
+  .card-example { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--sand); text-align: center; margin-top: 10px; font-style: italic; line-height: 1.5; padding: 0 8px; }
+  .grammar-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; color: var(--rust); background: rgba(181,101,74,0.08); padding: 3px 10px; border-radius: 10px; margin-top: 10px; font-style: normal; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .card-back .grammar-tag { color: var(--sand); background: rgba(212,197,176,0.12); }
+  .tense-tag { display: inline-block; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); background: rgba(122,102,82,0.08); padding: 3px 10px; border-radius: 10px; margin-top: 6px; font-family: 'DM Sans', sans-serif; font-weight: 500; }
+  .card-back .tense-tag { color: var(--sand); background: rgba(212,197,176,0.12); }
+  .tap-hint { font-size: 0.6rem; color: var(--sand); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 16px; opacity: 0.55; }
+
+  .audio-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--warm); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .card-back .audio-btn { background: rgba(247,243,238,0.1); border-color: rgba(212,197,176,0.3); }
+  .audio-btn:hover { transform: scale(1.05); }
+  .audio-btn:active { transform: scale(0.92); }
+  .audio-btn svg { width: 14px; height: 14px; fill: var(--clay); }
+  .card-back .audio-btn svg { fill: var(--sand); }
+
+  .response-buttons { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .response-buttons.visible { opacity: 1; pointer-events: all; }
+  .btn { flex: 1; padding: 13px 8px; border: none; border-radius: 11px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; cursor: pointer; transition: transform 0.15s ease; }
+  .btn:active { transform: scale(0.96); }
+  .btn-again { background: #F0E8E4; color: #8B5E52; }
+  .btn-hard { background: #EDE8DD; color: var(--accent); }
+  .btn-good { background: var(--green); color: white; }
+
+  .browse-list { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .browse-card { background: white; border: 1px solid var(--warm); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 3px var(--shadow); transition: all 0.2s; position: relative; }
+  .browse-fr { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; line-height: 1.3; padding-right: 110px; }
+  .browse-en { font-size: 0.78rem; color: var(--clay); padding-right: 110px; }
+  .browse-ex { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem; color: var(--accent); margin-top: 4px; padding-right: 110px; }
+  .browse-actions { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
+  .icon-btn { width: 30px; height: 30px; border: none; background: var(--warm); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .icon-btn:hover { background: var(--sand); }
+  .icon-btn:active { transform: scale(0.9); }
+  .icon-btn svg { width: 13px; height: 13px; fill: var(--clay); }
+
+  .add-section { width: 100%; max-width: 380px; }
+  .add-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--dark); border: none; border-radius: 12px; padding: 14px 16px; width: 100%; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--cream); letter-spacing: 0.05em; font-weight: 500; transition: opacity 0.2s; margin-bottom: 12px; }
+  .add-toggle:hover { opacity: 0.9; }
+  .add-form { display: none; flex-direction: column; gap: 10px; background: white; border: 1px solid var(--warm); border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px var(--shadow); }
+  .add-form.open { display: flex; }
+  .form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 400; margin-bottom: 4px; }
+  .add-form input, .add-form select {
+    border: 1px solid var(--warm); border-radius: 8px; padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--dark);
+    background: var(--cream); outline: none; transition: border-color 0.2s; width: 100%;
+  }
+  .add-form input:focus, .add-form select:focus { border-color: var(--clay); }
+  .add-form input::placeholder { color: var(--sand); }
+  .form-row { display: flex; gap: 8px; }
+  .form-row > * { flex: 1; }
+  .btn-add { background: var(--dark); color: var(--cream); border: none; border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; letter-spacing: 0.05em; flex: 2; }
+  .btn-cancel { background: none; border: 1px solid var(--sand); color: var(--clay); border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; flex: 1; }
+  .form-actions { display: flex; gap: 8px; }
+
+  .done-state { text-align: center; padding: 40px 20px; width: 100%; max-width: 380px; }
+  .done-icon { font-size: 2.4rem; margin-bottom: 14px; }
+  .done-state h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 300; margin-bottom: 8px; }
+  .done-state p { font-size: 0.8rem; color: var(--clay); margin-bottom: 20px; line-height: 1.5; }
+  .btn-restart { background: var(--dark); color: var(--cream); border: none; border-radius: 10px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<header>
+  <div class="app-title">Cartes de Mots</div>
+  <div class="app-subtitle">French Flashcards</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="card-counter" id="cardCounter"></div>
+</header>
+
+<div class="deck-tabs" id="deckTabs"></div>
+
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeStudy" onclick="setMode('study')">Study</button>
+  <button class="mode-btn" id="modeBrowse" onclick="setMode('browse')">Browse</button>
+</div>
+
+<div id="mainContent"></div>
+
+<div class="add-section">
+  <button class="add-toggle" onclick="openAddForm()">＋ Add new card</button>
+  <div class="add-form" id="addForm">
+    <div class="form-title" id="formTitle">New card</div>
+    <input type="text" id="inputFrench" placeholder="French word or phrase" />
+    <input type="text" id="inputEnglish" placeholder="English meaning" />
+    <input type="text" id="inputExample" placeholder="Example sentence (optional)" />
+    <div class="form-row">
+      <input type="text" id="inputGrammar" placeholder="Tag e.g. + subj., je plie" />
+      <select id="inputCategory"></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeAddForm()">Cancel</button>
+      <button class="btn-add" id="saveBtn" onclick="saveCard()">Add card</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_DECKS = {
+  yoga: {
+    label: "Yoga",
+    cards: [
+      { fr: "Le carré magique", en: "The magic square", ex: "Imaginez le carré magique sous vos pieds", grammar: "" },
+      { fr: "Les coins", en: "The corners", ex: "Pressez dans les quatre coins", grammar: "" },
+      { fr: "Les côtés", en: "The sides / edges", ex: "Sentez les côtés du tapis", grammar: "" },
+      { fr: "Le centre", en: "The centre", ex: "Trouvez votre centre", grammar: "" },
+      { fr: "L'axe", en: "The axis", ex: "L'axe vertical du corps", grammar: "" },
+      { fr: "L'orientation", en: "Orientation", ex: "Changez d'orientation", grammar: "" },
+      { fr: "Le devant / le derrière", en: "The front / back", ex: "Le devant du corps s'allonge", grammar: "" },
+      { fr: "Les diagonales", en: "The diagonals", ex: "Tracez les diagonales", grammar: "" },
+      { fr: "Symétrique / asymétrique", en: "Symmetrical / asymmetrical", ex: "Une posture asymétrique", grammar: "" },
+      { fr: "Plier", en: "To fold / to bend", ex: "Pliez le genou droit", grammar: "je plie · j'ai plié" },
+      { fr: "Tourner", en: "To turn / rotate", ex: "Tournez le bassin", grammar: "je tourne · j'ai tourné" },
+      { fr: "Incliner", en: "To tilt / lean", ex: "Inclinez le buste", grammar: "j'incline · j'ai incliné" },
+      { fr: "Les cinq éléments", en: "The five elements", ex: "Les cinq éléments du Tao", grammar: "" },
+      { fr: "Le bois", en: "Wood", ex: "L'élément bois gouverne le foie", grammar: "" },
+      { fr: "Le feu", en: "Fire", ex: "Le feu correspond au cœur", grammar: "" },
+      { fr: "La terre", en: "Earth", ex: "La terre nourrit la rate", grammar: "" },
+      { fr: "Le métal", en: "Metal", ex: "Le métal et les poumons", grammar: "" },
+      { fr: "L'eau", en: "Water", ex: "L'eau et les reins", grammar: "" },
+      { fr: "Le foie", en: "The liver", ex: "Le foie stocke le sang", grammar: "" },
+      { fr: "Le cœur", en: "The heart", ex: "Le cœur abrite l'esprit", grammar: "" },
+      { fr: "La rate", en: "The spleen", ex: "La rate transforme la nourriture", grammar: "" },
+      { fr: "Les poumons", en: "The lungs", ex: "Les poumons gouvernent le qi", grammar: "" },
+      { fr: "Les reins", en: "The kidneys", ex: "Les reins stockent l'essence", grammar: "" },
+      { fr: "L'estomac", en: "The stomach", ex: "L'estomac reçoit la nourriture", grammar: "" },
+      { fr: "La vésicule biliaire", en: "The gallbladder", ex: "Le méridien de la vésicule biliaire", grammar: "" },
+      { fr: "Le yin et le yang", en: "Yin and yang", ex: "L'équilibre du yin et du yang", grammar: "" },
+      { fr: "Le qi / l'énergie", en: "Qi / vital energy", ex: "Faire circuler le qi", grammar: "" },
+      { fr: "Le tao", en: "The Dao", ex: "Suivre le tao", grammar: "" },
+      { fr: "Le souffle", en: "Breath / vital breath", ex: "Le souffle traverse le corps", grammar: "" },
+      { fr: "Les méridiens", en: "The meridians", ex: "Les méridiens du corps", grammar: "" },
+      { fr: "Circuler", en: "To circulate / flow", ex: "Laissez l'énergie circuler", grammar: "je circule · j'ai circulé" },
+      { fr: "L'enracinement", en: "Rootedness / grounding", ex: "Trouvez votre enracinement", grammar: "" },
+      { fr: "Le vide / le plein", en: "Empty / full", ex: "Le passage du vide au plein", grammar: "" },
+      { fr: "L'archétype", en: "The archetype", ex: "Les archétypes de Jung", grammar: "" },
+      { fr: "L'inconscient", en: "The unconscious", ex: "L'inconscient collectif", grammar: "" },
+      { fr: "L'ombre", en: "The shadow", ex: "Travailler avec son ombre", grammar: "" },
+      { fr: "L'animus / l'anima", en: "Animus / anima", ex: "L'animus et l'anima", grammar: "" },
+      { fr: "Le soi", en: "The Self", ex: "La quête du soi", grammar: "" },
+      { fr: "L'individuation", en: "Individuation", ex: "Le processus d'individuation", grammar: "" },
+      { fr: "L'incarnation", en: "Embodiment", ex: "L'incarnation de la pratique", grammar: "" },
+      { fr: "Le bassin", en: "The pelvis", ex: "Basculez le bassin", grammar: "" },
+      { fr: "La colonne vertébrale", en: "The spine", ex: "Allongez la colonne vertébrale", grammar: "" },
+      { fr: "Les hanches", en: "The hips", ex: "Ouvrez les hanches", grammar: "" },
+      { fr: "Les omoplates", en: "The shoulder blades", ex: "Glissez les omoplates vers le bas", grammar: "" },
+      { fr: "Le sacrum", en: "The sacrum", ex: "Le sacrum s'enfonce", grammar: "" },
+      { fr: "Inspirer / expirer", en: "To inhale / exhale", ex: "Inspirez par le nez, expirez par la bouche", grammar: "j'inspire · j'ai inspiré" },
+      { fr: "Soulever", en: "To lift", ex: "Soulevez le sternum", grammar: "je soulève · j'ai soulevé" },
+      { fr: "Déposer", en: "To set down / place", ex: "Déposez le talon au sol", grammar: "je dépose · j'ai déposé" },
+      { fr: "Maintenir", en: "To hold / maintain", ex: "Maintenez la posture cinq respirations", grammar: "je maintiens · j'ai maintenu (irreg.)" },
+      { fr: "Relâcher", en: "To release", ex: "Relâchez la mâchoire", grammar: "je relâche · j'ai relâché" }
+    ]
+  },
+  phrases: {
+    label: "Phrases clés",
+    cards: [
+      { fr: "J'ai du mal à...", en: "I struggle to...", ex: "J'ai du mal à me concentrer", grammar: "+ infinitif" },
+      { fr: "Ça dépend", en: "It depends", ex: "Ça dépend du contexte", grammar: "+ de" },
+      { fr: "En fait", en: "Actually / in fact", ex: "En fait, c'est plus simple que ça", grammar: "" },
+      { fr: "C'est pas évident", en: "It's not easy / not obvious", ex: "C'est pas évident au début", grammar: "" },
+      { fr: "Quand même", en: "Still / all the same", ex: "C'est quand même impressionnant", grammar: "" },
+      { fr: "Il me semble que", en: "It seems to me that", ex: "Il me semble que tu as raison", grammar: "+ indicatif" },
+      { fr: "Ça m'étonnerait que", en: "I'd be surprised if...", ex: "Ça m'étonnerait qu'il vienne", grammar: "+ subjonctif" },
+      { fr: "D'ailleurs", en: "Besides / by the way", ex: "D'ailleurs, j'allais te le dire", grammar: "" },
+      { fr: "Bah...", en: "Well... / Hmm...", ex: "Bah, je sais pas trop", grammar: "" },
+      { fr: "Ça fait du bien", en: "It feels good", ex: "Ça fait du bien de marcher", grammar: "+ de + infinitif" },
+      { fr: "J'ai l'impression que", en: "I get the feeling that", ex: "J'ai l'impression qu'il est fatigué", grammar: "+ indicatif" },
+      { fr: "Pourtant", en: "Yet / and yet", ex: "Pourtant c'était clair", grammar: "" },
+      { fr: "Ça fait longtemps que", en: "It's been a while since", ex: "Ça fait longtemps que je pratique", grammar: "+ indicatif (présent)" },
+      { fr: "J'aurais bien voulu", en: "I would have liked to", ex: "J'aurais bien voulu venir", grammar: "+ infinitif (cond. passé)" },
+      { fr: "Ce qui me plaît, c'est...", en: "What I like is...", ex: "Ce qui me plaît, c'est le silence", grammar: "" },
+      { fr: "Du coup", en: "So / as a result", ex: "Du coup, on a annulé", grammar: "" },
+      { fr: "Genre", en: "Like / sort of (filler)", ex: "C'était genre vraiment bizarre", grammar: "informal" },
+      { fr: "Tu vois ce que je veux dire ?", en: "You know what I mean?", ex: "C'est subtil, tu vois ce que je veux dire ?", grammar: "" },
+      { fr: "Ça vaut le coup de", en: "It's worth it to...", ex: "Ça vaut le coup d'essayer", grammar: "+ infinitif" },
+      { fr: "Au fait", en: "By the way", ex: "Au fait, tu as appelé Marc ?", grammar: "" },
+      { fr: "N'importe quoi", en: "Nonsense / whatever", ex: "Il dit n'importe quoi", grammar: "" },
+      { fr: "Si j'avais su, j'aurais...", en: "If I had known, I would have...", ex: "Si j'avais su, j'aurais pris un parapluie", grammar: "si + plus-que-parf., cond. passé" },
+      { fr: "Bien que", en: "Although", ex: "Bien qu'il soit fatigué, il continue", grammar: "+ subjonctif" },
+      { fr: "Avant que", en: "Before (something happens)", ex: "Avant qu'il parte, dis-lui merci", grammar: "+ subjonctif" },
+      { fr: "Il faut que", en: "It's necessary that / I need to", ex: "Il faut que je rentre", grammar: "+ subjonctif" },
+      { fr: "À condition que", en: "Provided that", ex: "Je viens à condition que tu sois là", grammar: "+ subjonctif" }
+    ]
+  },
+  questions: {
+    label: "Questions",
+    cards: [
+      { fr: "Qu'est-ce que tu en penses ?", en: "What do you think?", ex: "Qu'est-ce que tu en penses, toi ?", grammar: "" },
+      { fr: "Comment ça se fait que... ?", en: "How come...?", ex: "Comment ça se fait qu'il soit en retard ?", grammar: "+ subjonctif" },
+      { fr: "Ça te dirait de... ?", en: "Would you fancy...?", ex: "Ça te dirait de boire un verre ?", grammar: "+ infinitif" },
+      { fr: "Tu as eu le temps de... ?", en: "Did you have time to...?", ex: "Tu as eu le temps de lire ça ?", grammar: "+ infinitif" },
+      { fr: "Tu peux me dire... ?", en: "Can you tell me...?", ex: "Tu peux me dire où c'est ?", grammar: "" },
+      { fr: "Ça te dérange si... ?", en: "Do you mind if...?", ex: "Ça te dérange si j'ouvre la fenêtre ?", grammar: "+ indicatif" },
+      { fr: "Est-ce que par hasard... ?", en: "Would you happen to...?", ex: "Est-ce que par hasard tu aurais un stylo ?", grammar: "+ conditionnel" },
+      { fr: "Tu pourrais m'expliquer... ?", en: "Could you explain to me...?", ex: "Tu pourrais m'expliquer ce mot ?", grammar: "conditionnel" },
+      { fr: "Je peux te poser une question ?", en: "Can I ask you a question?", ex: "Je peux te poser une question rapide ?", grammar: "" },
+      { fr: "Tu sais si... ?", en: "Do you know if...?", ex: "Tu sais si c'est ouvert le dimanche ?", grammar: "+ indicatif" },
+      { fr: "Tu as compris ?", en: "Did you understand?", ex: "Tu as compris la consigne ?", grammar: "" },
+      { fr: "Ça te va ?", en: "Does that work for you?", ex: "On se voit à 19h, ça te va ?", grammar: "" },
+      { fr: "Comment dire... ?", en: "How to say... / how do I put it...", ex: "C'est, comment dire, un peu compliqué", grammar: "" },
+      { fr: "Tu peux répéter ?", en: "Can you repeat that?", ex: "Désolé, tu peux répéter ?", grammar: "" },
+      { fr: "Qu'est-ce que ça veut dire ?", en: "What does that mean?", ex: "Qu'est-ce que ça veut dire, ce mot ?", grammar: "" },
+      { fr: "Je ne suis pas sûr·e", en: "I'm not sure", ex: "Je ne suis pas sûre, à vrai dire", grammar: "" },
+      { fr: "À ton avis", en: "In your opinion", ex: "À ton avis, on devrait y aller ?", grammar: "" },
+      { fr: "Pourquoi pas", en: "Why not", ex: "Pourquoi pas, ça pourrait être sympa", grammar: "" },
+      { fr: "C'est-à-dire ?", en: "Meaning? / I.e.?", ex: "C'est compliqué — c'est-à-dire ?", grammar: "" },
+      { fr: "Plutôt", en: "Rather / quite", ex: "C'est plutôt sympa comme idée", grammar: "" }
+    ]
+  },
+  daily: {
+    label: "Quotidien",
+    cards: [
+      { fr: "Je vais prendre...", en: "I'll have...", ex: "Je vais prendre un café, s'il vous plaît", grammar: "futur proche" },
+      { fr: "L'addition, s'il vous plaît", en: "The bill, please", ex: "Excusez-moi, l'addition s'il vous plaît", grammar: "" },
+      { fr: "Sur place ou à emporter ?", en: "For here or to go?", ex: "C'est sur place ou à emporter ?", grammar: "" },
+      { fr: "Une carafe d'eau", en: "A jug of (tap) water", ex: "Vous pourriez nous apporter une carafe d'eau ?", grammar: "" },
+      { fr: "Vous avez choisi ?", en: "Have you chosen?", ex: "Bonjour, vous avez choisi ?", grammar: "passé composé" },
+      { fr: "C'est offert", en: "It's on the house", ex: "Le café, c'est offert", grammar: "" },
+      { fr: "Je passe te prendre", en: "I'll come pick you up", ex: "Je passe te prendre à 18h", grammar: "" },
+      { fr: "Tu fais quoi ce soir ?", en: "What are you up to tonight?", ex: "Salut, tu fais quoi ce soir ?", grammar: "" },
+      { fr: "On se capte plus tard ?", en: "Catch up later?", ex: "On se capte plus tard alors", grammar: "informal" },
+      { fr: "Je suis crevé·e", en: "I'm exhausted", ex: "Je suis crevée, je rentre", grammar: "informal" },
+      { fr: "Je me dépêche", en: "I'm hurrying", ex: "Attends-moi, je me dépêche", grammar: "v.pron." },
+      { fr: "Je suis en retard", en: "I'm late", ex: "Désolée, je suis en retard", grammar: "" },
+      { fr: "Ça marche", en: "OK / sounds good", ex: "À demain alors — ça marche !", grammar: "" },
+      { fr: "Pas de souci", en: "No worries", ex: "Pas de souci, prends ton temps", grammar: "" },
+      { fr: "Tu peux me passer... ?", en: "Can you pass me...?", ex: "Tu peux me passer le sel ?", grammar: "" },
+      { fr: "Je m'en occupe", en: "I'll take care of it", ex: "T'inquiète, je m'en occupe", grammar: "v.pron. + en" },
+      { fr: "Ça fait combien ?", en: "How much is it?", ex: "Pour deux cafés, ça fait combien ?", grammar: "" },
+      { fr: "Je cherche...", en: "I'm looking for...", ex: "Je cherche la rue de Rivoli", grammar: "" },
+      { fr: "Bonne journée !", en: "Have a good day!", ex: "Merci, bonne journée !", grammar: "" },
+      { fr: "À tout à l'heure", en: "See you in a bit", ex: "OK, à tout à l'heure !", grammar: "" },
+      { fr: "Désolé·e de te déranger", en: "Sorry to bother you", ex: "Désolée de te déranger, t'as une minute ?", grammar: "+ de + infinitif" },
+      { fr: "Ça te tente ?", en: "Are you up for it?", ex: "On va au ciné, ça te tente ?", grammar: "" }
+    ]
+  },
+  conjugaisons: {
+    label: "Conjugaisons",
+    cards: [
+      // ÊTRE
+      { fr: "(je) être", en: "je suis", ex: "Je suis fatigué aujourd'hui", grammar: "présent" },
+      { fr: "(nous) être", en: "nous sommes", ex: "Nous sommes prêts", grammar: "présent" },
+      { fr: "(vous) être", en: "vous êtes", ex: "Vous êtes en retard", grammar: "présent" },
+      { fr: "(j') être", en: "j'ai été", ex: "J'ai été content de te voir", grammar: "passé composé" },
+      { fr: "(j') être", en: "j'étais", ex: "Quand j'étais petit, je jouais ici", grammar: "imparfait" },
+      { fr: "(nous) être", en: "nous étions", ex: "Nous étions amis avant", grammar: "imparfait" },
+      { fr: "(je) être", en: "je serai", ex: "Je serai là demain", grammar: "futur simple" },
+      { fr: "(je) être", en: "je serais", ex: "Je serais content de venir", grammar: "conditionnel" },
+      { fr: "(que je) être", en: "que je sois", ex: "Il faut que je sois ponctuel", grammar: "subjonctif" },
+      { fr: "(qu'il) être", en: "qu'il soit", ex: "Bien qu'il soit tard, je viens", grammar: "subjonctif" },
+      { fr: "(j') être", en: "j'avais été", ex: "J'avais été surpris par sa réaction", grammar: "plus-que-parfait" },
+
+      // AVOIR
+      { fr: "(j') avoir", en: "j'ai", ex: "J'ai un chien", grammar: "présent" },
+      { fr: "(nous) avoir", en: "nous avons", ex: "Nous avons faim", grammar: "présent" },
+      { fr: "(ils) avoir", en: "ils ont", ex: "Ils ont raison", grammar: "présent" },
+      { fr: "(j') avoir", en: "j'ai eu", ex: "J'ai eu de la chance", grammar: "passé composé" },
+      { fr: "(nous) avoir", en: "nous avons eu", ex: "Nous avons eu un bon moment", grammar: "passé composé" },
+      { fr: "(j') avoir", en: "j'avais", ex: "J'avais dix ans à l'époque", grammar: "imparfait" },
+      { fr: "(j') avoir", en: "j'aurai", ex: "J'aurai trente ans en mai", grammar: "futur simple" },
+      { fr: "(j') avoir", en: "j'aurais", ex: "J'aurais besoin d'aide", grammar: "conditionnel" },
+      { fr: "(que j') avoir", en: "que j'aie", ex: "Il faut que j'aie le temps", grammar: "subjonctif" },
+      { fr: "(qu'il) avoir", en: "qu'il ait", ex: "Bien qu'il ait raison, je n'écoute pas", grammar: "subjonctif" },
+      { fr: "(j') avoir", en: "j'avais eu", ex: "J'avais eu peur ce jour-là", grammar: "plus-que-parfait" },
+
+      // FAIRE
+      { fr: "(je) faire", en: "je fais", ex: "Je fais du yoga", grammar: "présent" },
+      { fr: "(nous) faire", en: "nous faisons", ex: "Nous faisons une pause", grammar: "présent" },
+      { fr: "(vous) faire", en: "vous faites", ex: "Vous faites quoi ?", grammar: "présent (irreg.)" },
+      { fr: "(j') faire", en: "j'ai fait", ex: "J'ai fait mes devoirs", grammar: "passé composé" },
+      { fr: "(je) faire", en: "je faisais", ex: "Je faisais du sport tous les jours", grammar: "imparfait" },
+      { fr: "(je) faire", en: "je ferai", ex: "Je ferai ça demain", grammar: "futur simple (irreg.)" },
+      { fr: "(je) faire", en: "je ferais", ex: "Je ferais bien une pause", grammar: "conditionnel" },
+      { fr: "(que je) faire", en: "que je fasse", ex: "Il faut que je fasse attention", grammar: "subjonctif (irreg.)" },
+      { fr: "(j') faire", en: "j'avais fait", ex: "J'avais fait une erreur", grammar: "plus-que-parfait" },
+
+      // ALLER
+      { fr: "(je) aller", en: "je vais", ex: "Je vais au marché", grammar: "présent (irreg.)" },
+      { fr: "(nous) aller", en: "nous allons", ex: "Nous allons à Paris", grammar: "présent" },
+      { fr: "(ils) aller", en: "ils vont", ex: "Ils vont au cinéma", grammar: "présent" },
+      { fr: "(je) aller", en: "je suis allé·e", ex: "Je suis allée au cours hier", grammar: "passé composé (être)" },
+      { fr: "(je) aller", en: "j'allais", ex: "J'allais te dire la même chose", grammar: "imparfait" },
+      { fr: "(je) aller", en: "j'irai", ex: "J'irai te chercher à 18h", grammar: "futur simple (irreg.)" },
+      { fr: "(je) aller", en: "j'irais", ex: "J'irais bien me coucher", grammar: "conditionnel" },
+      { fr: "(que je) aller", en: "que j'aille", ex: "Il faut que j'aille au travail", grammar: "subjonctif (irreg.)" },
+
+      // DIRE
+      { fr: "(je) dire", en: "je dis", ex: "Je dis la vérité", grammar: "présent" },
+      { fr: "(vous) dire", en: "vous dites", ex: "Vous dites quoi ?", grammar: "présent (irreg.)" },
+      { fr: "(j') dire", en: "j'ai dit", ex: "Je l'ai déjà dit", grammar: "passé composé" },
+      { fr: "(je) dire", en: "je disais", ex: "Comme je disais...", grammar: "imparfait" },
+      { fr: "(que je) dire", en: "que je dise", ex: "Tu veux que je dise quoi ?", grammar: "subjonctif" },
+
+      // POUVOIR
+      { fr: "(je) pouvoir", en: "je peux", ex: "Je peux t'aider", grammar: "présent (irreg.)" },
+      { fr: "(nous) pouvoir", en: "nous pouvons", ex: "Nous pouvons commencer", grammar: "présent" },
+      { fr: "(j') pouvoir", en: "j'ai pu", ex: "J'ai pu finir à temps", grammar: "passé composé" },
+      { fr: "(je) pouvoir", en: "je pouvais", ex: "Je pouvais pas venir hier", grammar: "imparfait" },
+      { fr: "(je) pouvoir", en: "je pourrai", ex: "Je pourrai venir demain", grammar: "futur simple" },
+      { fr: "(je) pouvoir", en: "je pourrais", ex: "Je pourrais essayer", grammar: "conditionnel" },
+      { fr: "(que je) pouvoir", en: "que je puisse", ex: "Il faut que je puisse partir tôt", grammar: "subjonctif (irreg.)" },
+
+      // VOULOIR
+      { fr: "(je) vouloir", en: "je veux", ex: "Je veux un café", grammar: "présent (irreg.)" },
+      { fr: "(nous) vouloir", en: "nous voulons", ex: "Nous voulons rester", grammar: "présent" },
+      { fr: "(j') vouloir", en: "j'ai voulu", ex: "J'ai voulu te le dire", grammar: "passé composé" },
+      { fr: "(je) vouloir", en: "je voulais", ex: "Je voulais juste vérifier", grammar: "imparfait" },
+      { fr: "(je) vouloir", en: "je voudrais", ex: "Je voudrais un thé", grammar: "conditionnel (very common)" },
+      { fr: "(que je) vouloir", en: "que je veuille", ex: "Bien que je veuille y aller, je peux pas", grammar: "subjonctif (irreg.)" },
+
+      // SAVOIR
+      { fr: "(je) savoir", en: "je sais", ex: "Je sais nager", grammar: "présent" },
+      { fr: "(nous) savoir", en: "nous savons", ex: "Nous savons la réponse", grammar: "présent" },
+      { fr: "(j') savoir", en: "j'ai su", ex: "J'ai su tout de suite", grammar: "passé composé" },
+      { fr: "(je) savoir", en: "je savais", ex: "Je savais que tu viendrais", grammar: "imparfait" },
+      { fr: "(je) savoir", en: "je saurai", ex: "Je saurai bientôt", grammar: "futur simple" },
+      { fr: "(que je) savoir", en: "que je sache", ex: "Pas que je sache", grammar: "subjonctif (irreg.)" },
+
+      // DEVOIR
+      { fr: "(je) devoir", en: "je dois", ex: "Je dois partir", grammar: "présent" },
+      { fr: "(j') devoir", en: "j'ai dû", ex: "J'ai dû annuler", grammar: "passé composé" },
+      { fr: "(je) devoir", en: "je devais", ex: "Je devais venir mais...", grammar: "imparfait" },
+      { fr: "(je) devoir", en: "je devrai", ex: "Je devrai te rappeler", grammar: "futur simple" },
+      { fr: "(je) devoir", en: "je devrais", ex: "Je devrais arrêter", grammar: "conditionnel (should)" },
+      { fr: "(que je) devoir", en: "que je doive", ex: "Avant que je doive partir", grammar: "subjonctif" },
+
+      // VOIR
+      { fr: "(je) voir", en: "je vois", ex: "Je vois ce que tu veux dire", grammar: "présent" },
+      { fr: "(nous) voir", en: "nous voyons", ex: "Nous voyons souvent nos amis", grammar: "présent" },
+      { fr: "(j') voir", en: "j'ai vu", ex: "J'ai vu ce film hier", grammar: "passé composé" },
+      { fr: "(je) voir", en: "je voyais", ex: "Je voyais bien qu'il était fatigué", grammar: "imparfait" },
+      { fr: "(je) voir", en: "je verrai", ex: "On verra demain", grammar: "futur simple" },
+      { fr: "(que je) voir", en: "que je voie", ex: "Il faut que je voie ça", grammar: "subjonctif" },
+
+      // VENIR
+      { fr: "(je) venir", en: "je viens", ex: "Je viens de Paris", grammar: "présent" },
+      { fr: "(nous) venir", en: "nous venons", ex: "Nous venons d'arriver", grammar: "présent" },
+      { fr: "(je) venir", en: "je suis venu·e", ex: "Je suis venue te chercher", grammar: "passé composé (être)" },
+      { fr: "(je) venir", en: "je venais", ex: "Je venais souvent ici", grammar: "imparfait" },
+      { fr: "(je) venir", en: "je viendrai", ex: "Je viendrai te voir", grammar: "futur simple (irreg.)" },
+      { fr: "(que je) venir", en: "que je vienne", ex: "Il veut que je vienne", grammar: "subjonctif" },
+
+      // PRENDRE
+      { fr: "(je) prendre", en: "je prends", ex: "Je prends le métro", grammar: "présent" },
+      { fr: "(nous) prendre", en: "nous prenons", ex: "Nous prenons un café", grammar: "présent" },
+      { fr: "(j') prendre", en: "j'ai pris", ex: "J'ai pris ma décision", grammar: "passé composé" },
+      { fr: "(je) prendre", en: "je prenais", ex: "Je prenais le bus tous les jours", grammar: "imparfait" },
+      { fr: "(que je) prendre", en: "que je prenne", ex: "Il faut que je prenne mon temps", grammar: "subjonctif" },
+
+      // METTRE
+      { fr: "(je) mettre", en: "je mets", ex: "Je mets mon manteau", grammar: "présent" },
+      { fr: "(j') mettre", en: "j'ai mis", ex: "J'ai mis trop de sel", grammar: "passé composé" },
+      { fr: "(je) mettre", en: "je mettais", ex: "Je mettais toujours cette robe", grammar: "imparfait" },
+      { fr: "(que je) mettre", en: "que je mette", ex: "Il faut que je mette mes chaussures", grammar: "subjonctif" },
+
+      // FALLOIR (impersonal)
+      { fr: "il falloir", en: "il faut", ex: "Il faut partir maintenant", grammar: "présent (impersonal)" },
+      { fr: "il falloir", en: "il a fallu", ex: "Il a fallu attendre", grammar: "passé composé" },
+      { fr: "il falloir", en: "il fallait", ex: "Il fallait me prévenir", grammar: "imparfait" },
+      { fr: "il falloir", en: "il faudra", ex: "Il faudra y penser", grammar: "futur simple" },
+      { fr: "il falloir", en: "il faudrait", ex: "Il faudrait essayer", grammar: "conditionnel" },
+
+      // CROIRE
+      { fr: "(je) croire", en: "je crois", ex: "Je crois que oui", grammar: "présent" },
+      { fr: "(j') croire", en: "j'ai cru", ex: "J'ai cru qu'il viendrait", grammar: "passé composé" },
+      { fr: "(je) croire", en: "je croyais", ex: "Je croyais qu'il était là", grammar: "imparfait" },
+      { fr: "(que je) croire", en: "que je croie", ex: "Tu veux que je croie ça ?", grammar: "subjonctif" },
+
+      // PARTIR
+      { fr: "(je) partir", en: "je pars", ex: "Je pars demain", grammar: "présent" },
+      { fr: "(je) partir", en: "je suis parti·e", ex: "Je suis partie tôt", grammar: "passé composé (être)" },
+      { fr: "(je) partir", en: "je partais", ex: "Je partais quand il est arrivé", grammar: "imparfait" },
+      { fr: "(que je) partir", en: "que je parte", ex: "Avant que je parte", grammar: "subjonctif" },
+
+      // FINIR (regular -ir model)
+      { fr: "(je) finir", en: "je finis", ex: "Je finis à 18h", grammar: "présent (-ir)" },
+      { fr: "(nous) finir", en: "nous finissons", ex: "Nous finissons bientôt", grammar: "présent (-ir)" },
+      { fr: "(j') finir", en: "j'ai fini", ex: "J'ai fini mon travail", grammar: "passé composé" },
+      { fr: "(je) finir", en: "je finissais", ex: "Je finissais quand tu as appelé", grammar: "imparfait" },
+
+      // PARLER (regular -er model)
+      { fr: "(je) parler", en: "je parle", ex: "Je parle français", grammar: "présent (-er)" },
+      { fr: "(j') parler", en: "j'ai parlé", ex: "J'ai parlé avec elle", grammar: "passé composé" },
+      { fr: "(je) parler", en: "je parlais", ex: "Je parlais pas bien à l'époque", grammar: "imparfait" },
+      { fr: "(je) parler", en: "je parlerai", ex: "Je lui parlerai demain", grammar: "futur simple" }
+    ]
+  },
+  completer: {
+    label: "À compléter",
+    cards: [
+      // Subjunctive triggers (your weak spot)
+      { fr: "Il faut que tu ___ (être) là.", en: "sois", ex: "Il faut que tu sois là.", grammar: "subjonctif" },
+      { fr: "Bien qu'il ___ (être) tard, je viens.", en: "soit", ex: "Bien qu'il soit tard, je viens.", grammar: "subjonctif" },
+      { fr: "Avant que tu ___ (partir), dis-moi.", en: "partes", ex: "Avant que tu partes, dis-moi.", grammar: "subjonctif" },
+      { fr: "Je veux qu'il ___ (faire) attention.", en: "fasse", ex: "Je veux qu'il fasse attention.", grammar: "subjonctif" },
+      { fr: "Ça m'étonnerait qu'elle ___ (venir).", en: "vienne", ex: "Ça m'étonnerait qu'elle vienne.", grammar: "subjonctif" },
+      { fr: "Il faut que je ___ (aller) au marché.", en: "aille", ex: "Il faut que j'aille au marché.", grammar: "subjonctif" },
+      { fr: "Pour que tu ___ (savoir), c'est demain.", en: "saches", ex: "Pour que tu saches, c'est demain.", grammar: "subjonctif" },
+      { fr: "À condition qu'il ___ (pouvoir) venir.", en: "puisse", ex: "À condition qu'il puisse venir.", grammar: "subjonctif" },
+
+      // Passé composé vs imparfait
+      { fr: "Hier, je ___ (manger) au restaurant.", en: "ai mangé", ex: "Hier, j'ai mangé au restaurant.", grammar: "passé composé" },
+      { fr: "Quand j'étais petit, je ___ (jouer) ici.", en: "jouais", ex: "Quand j'étais petit, je jouais ici.", grammar: "imparfait" },
+      { fr: "Il ___ (pleuvoir) quand je suis sorti.", en: "pleuvait", ex: "Il pleuvait quand je suis sorti.", grammar: "imparfait (background)" },
+      { fr: "Ce matin, elle ___ (partir) très tôt.", en: "est partie", ex: "Ce matin, elle est partie très tôt.", grammar: "passé composé (être)" },
+      { fr: "Tous les jours, on ___ (aller) au parc.", en: "allait", ex: "Tous les jours, on allait au parc.", grammar: "imparfait (habit)" },
+      { fr: "Soudain, il ___ (entendre) un bruit.", en: "a entendu", ex: "Soudain, il a entendu un bruit.", grammar: "passé composé (event)" },
+
+      // Futur simple
+      { fr: "Demain, je ___ (être) à Paris.", en: "serai", ex: "Demain, je serai à Paris.", grammar: "futur simple" },
+      { fr: "L'année prochaine, nous ___ (aller) en Italie.", en: "irons", ex: "L'année prochaine, nous irons en Italie.", grammar: "futur simple" },
+      { fr: "Tu ___ (faire) tes devoirs ce soir ?", en: "feras", ex: "Tu feras tes devoirs ce soir ?", grammar: "futur simple" },
+      { fr: "Il ___ (avoir) trente ans en mai.", en: "aura", ex: "Il aura trente ans en mai.", grammar: "futur simple" },
+
+      // Conditionnel
+      { fr: "Je ___ (vouloir) un café, s'il vous plaît.", en: "voudrais", ex: "Je voudrais un café, s'il vous plaît.", grammar: "conditionnel (politeness)" },
+      { fr: "Si j'avais le temps, je ___ (venir).", en: "viendrais", ex: "Si j'avais le temps, je viendrais.", grammar: "conditionnel (si + imparfait)" },
+      { fr: "Tu ___ (devoir) te reposer.", en: "devrais", ex: "Tu devrais te reposer.", grammar: "conditionnel (should)" },
+      { fr: "Ce ___ (être) bien d'essayer.", en: "serait", ex: "Ce serait bien d'essayer.", grammar: "conditionnel" },
+
+      // Plus-que-parfait
+      { fr: "Quand il est arrivé, j'___ déjà ___ (manger).", en: "avais déjà mangé", ex: "Quand il est arrivé, j'avais déjà mangé.", grammar: "plus-que-parfait" },
+      { fr: "Elle m'a dit qu'elle ___ (oublier) son sac.", en: "avait oublié", ex: "Elle m'a dit qu'elle avait oublié son sac.", grammar: "plus-que-parfait" },
+      { fr: "Si tu ___ (savoir), tu serais venu.", en: "avais su", ex: "Si tu avais su, tu serais venu.", grammar: "plus-que-parfait (si)" },
+      { fr: "Si j'___ (être) là, j'aurais pu aider.", en: "avais été", ex: "Si j'avais été là, j'aurais pu aider.", grammar: "plus-que-parfait (si)" },
+
+      // Mixed B1 hardies
+      { fr: "Cela fait une heure que je t'___ (attendre).", en: "attends", ex: "Cela fait une heure que je t'attends.", grammar: "présent (durée)" },
+      { fr: "Je viens de ___ (finir) mon travail.", en: "finir", ex: "Je viens de finir mon travail.", grammar: "passé récent + infinitif" },
+      { fr: "Pendant que je cuisinais, il ___ (lire).", en: "lisait", ex: "Pendant que je cuisinais, il lisait.", grammar: "imparfait (parallel)" },
+      { fr: "J'espère qu'il ___ (venir) demain.", en: "viendra", ex: "J'espère qu'il viendra demain.", grammar: "futur (espérer + ind.)" }
+    ]
+  },
+  mine: { label: "Mes mots", cards: [] }
+};
+
+let decks = loadDecks();
+let currentDeck = 'yoga';
+let mode = 'study';
+let queue = [];
+let currentIndex = 0;
+let isFlipped = false;
+let editingCardId = null;
+
+function loadDecks() {
+  try {
+    const saved = localStorage.getItem('cartesDeMots_decks');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      const merged = JSON.parse(JSON.stringify(DEFAULT_DECKS));
+      Object.keys(parsed).forEach(key => {
+        if (key === '_edits') return;
+        if (key === 'mine') {
+          if (parsed[key].cards) merged[key].cards = parsed[key].cards;
+        } else if (merged[key] && parsed[key].cards) {
+          const userCards = parsed[key].cards.filter(c => c.userAdded);
+          merged[key].cards.push(...userCards);
+        }
+      });
+      if (parsed._edits) {
+        Object.keys(parsed._edits).forEach(deckKey => {
+          if (!merged[deckKey]) return;
+          parsed._edits[deckKey].forEach(edit => {
+            if (edit.deleted) {
+              merged[deckKey].cards = merged[deckKey].cards.filter(c => c.fr !== edit.original_fr);
+            } else if (edit.original_fr && edit.changes) {
+              const idx = merged[deckKey].cards.findIndex(c => c.fr === edit.original_fr);
+              if (idx !== -1) merged[deckKey].cards[idx] = { ...merged[deckKey].cards[idx], ...edit.changes, _origFr: edit.original_fr };
+            }
+          });
+        });
+      }
+      return merged;
+    }
+  } catch (e) { console.warn('Could not load saved decks', e); }
+  return JSON.parse(JSON.stringify(DEFAULT_DECKS));
+}
+
+function saveDecks() {
+  try {
+    const toSave = { _edits: {} };
+    Object.keys(decks).forEach(key => {
+      if (key === 'mine') {
+        toSave[key] = { cards: decks[key].cards };
+      } else {
+        const userAdded = decks[key].cards.filter(c => c.userAdded);
+        if (userAdded.length) toSave[key] = { cards: userAdded };
+        const defaultCards = DEFAULT_DECKS[key].cards;
+        const currentDefault = decks[key].cards.filter(c => !c.userAdded);
+        const edits = [];
+        defaultCards.forEach(orig => {
+          const found = currentDefault.find(c => c.fr === orig.fr || c._origFr === orig.fr);
+          if (!found) {
+            edits.push({ original_fr: orig.fr, deleted: true });
+          } else if (found._origFr === orig.fr) {
+            edits.push({ original_fr: orig.fr, changes: { fr: found.fr, en: found.en, ex: found.ex, grammar: found.grammar } });
+          }
+        });
+        if (edits.length) toSave._edits[key] = edits;
+      }
+    });
+    localStorage.setItem('cartesDeMots_decks', JSON.stringify(toSave));
+  } catch (e) { console.warn('Could not save decks', e); }
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) { const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+let frenchVoice = null;
+function loadVoices() {
+  if (typeof speechSynthesis === 'undefined') return;
+  const voices = speechSynthesis.getVoices();
+  frenchVoice = voices.find(v => v.lang === 'fr-FR') || voices.find(v => v.lang.startsWith('fr')) || null;
+}
+if (typeof speechSynthesis !== 'undefined') {
+  loadVoices();
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text, event) {
+  if (event) event.stopPropagation();
+  if (typeof speechSynthesis === 'undefined') return;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'fr-FR';
+  if (frenchVoice) utterance.voice = frenchVoice;
+  utterance.rate = 0.9;
+  speechSynthesis.speak(utterance);
+}
+
+function setMode(newMode) {
+  mode = newMode;
+  document.getElementById('modeStudy').classList.toggle('active', mode === 'study');
+  document.getElementById('modeBrowse').classList.toggle('active', mode === 'browse');
+  if (mode === 'study') initDeck();
+  else render();
+}
+
+function switchDeck(key) {
+  currentDeck = key;
+  if (mode === 'study') initDeck();
+  else render();
+}
+
+function initDeck() {
+  queue = shuffle(decks[currentDeck].cards);
+  currentIndex = 0;
+  isFlipped = false;
+  render();
+}
+
+function render() {
+  renderTabs();
+  if (mode === 'browse') { renderBrowse(); return; }
+  if (!queue.length) { renderEmpty(); return; }
+  if (currentIndex >= queue.length) { renderDone(); return; }
+  renderCard();
+}
+
+function renderTabs() {
+  document.getElementById('deckTabs').innerHTML = Object.entries(decks).map(([key,deck]) =>
+    `<button class="deck-tab ${key===currentDeck?'active':''}" onclick="switchDeck('${key}')">${deck.label}<span class="count">${deck.cards.length}</span></button>`
+  ).join('');
+}
+
+const audioIcon = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
+const editIcon = `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
+const trashIcon = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+
+function isConjugationDeck() {
+  return currentDeck === 'conjugaisons' || currentDeck === 'completer';
+}
+
+function renderCard() {
+  const card = queue[currentIndex];
+  document.getElementById('progressFill').style.width = (currentIndex/queue.length*100) + '%';
+  document.getElementById('cardCounter').textContent = `${currentIndex+1} / ${queue.length}`;
+  // For conjugation/completion decks, the "answer" is on the back; speak the back text
+  const conjugation = isConjugationDeck();
+  const speakText = conjugation ? (card.ex || card.en) : card.fr;
+  const frEsc = JSON.stringify(speakText).replace(/"/g,'&quot;');
+  const frontLabel = conjugation ? 'Prompt' : 'Français';
+  const backLabel = conjugation ? 'Réponse' : 'English';
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="card-scene" onclick="flipCard()">
+      <div class="card-inner ${isFlipped?'flipped':''}" id="cardInner">
+        <div class="card-face card-front">
+          ${!conjugation ? `<button class="audio-btn" onclick="speak(${frEsc}, event)" aria-label="Play">${audioIcon}</button>` : ''}
+          <div class="card-label">${frontLabel}</div>
+          <div class="card-word">${escapeHtml(card.fr)}</div>
+          ${card.grammar ? `<div class="${conjugation ? 'tense-tag' : 'grammar-tag'}">${escapeHtml(card.grammar)}</div>` : ''}
+          <div class="tap-hint">tap to reveal</div>
+        </div>
+        <div class="card-face card-back">
+          <button class="audio-btn" onclick="speak(${frEsc}, event)" aria-label="Play">${audioIcon}</button>
+          <div class="card-label">${backLabel}</div>
+          <div class="card-word">${escapeHtml(card.en)}</div>
+          ${card.ex ? `<div class="card-example">${escapeHtml(card.ex)}</div>` : ''}
+          ${card.grammar ? `<div class="${conjugation ? 'tense-tag' : 'grammar-tag'}">${escapeHtml(card.grammar)}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    <div class="response-buttons ${isFlipped?'visible':''}" id="responseButtons">
+      <button class="btn btn-again" onclick="respond('again')">Again</button>
+      <button class="btn btn-hard" onclick="respond('hard')">Hard</button>
+      <button class="btn btn-good" onclick="respond('good')">Got it ✓</button>
+    </div>`;
+}
+
+function renderBrowse() {
+  document.getElementById('progressFill').style.width = '0%';
+  const cards = decks[currentDeck].cards;
+  document.getElementById('cardCounter').textContent = `${cards.length} cards`;
+  if (!cards.length) { renderEmpty(); return; }
+  const conjugation = isConjugationDeck();
+  document.getElementById('mainContent').innerHTML = `
+    <div class="browse-list">
+      ${cards.map((card, idx) => {
+        const speakText = conjugation ? (card.ex || card.en) : card.fr;
+        const frEsc = JSON.stringify(speakText).replace(/"/g,'&quot;');
+        return `
+        <div class="browse-card">
+          <div class="browse-fr">${escapeHtml(card.fr)}${card.grammar ? ` <span class="${conjugation ? 'tense-tag' : 'grammar-tag'}">${escapeHtml(card.grammar)}</span>` : ''}</div>
+          <div class="browse-en">${escapeHtml(card.en)}</div>
+          ${card.ex ? `<div class="browse-ex">${escapeHtml(card.ex)}</div>` : ''}
+          <div class="browse-actions">
+            <button class="icon-btn" onclick="speak(${frEsc}, event)" aria-label="Play">${audioIcon}</button>
+            <button class="icon-btn" onclick="editCard('${currentDeck}', ${idx})" aria-label="Edit">${editIcon}</button>
+            <button class="icon-btn" onclick="deleteCard('${currentDeck}', ${idx})" aria-label="Delete">${trashIcon}</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderDone() {
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('cardCounter').textContent = `${queue.length} / ${queue.length}`;
+  document.getElementById('mainContent').innerHTML = `
+    <div class="done-state">
+      <div class="done-icon">🌿</div>
+      <h3>Bien joué !</h3>
+      <p>You went through all ${queue.length} cards.</p>
+      <button class="btn-restart" onclick="initDeck()">Practice again</button>
+    </div>`;
+}
+
+function renderEmpty() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="done-state">
+      <div class="done-icon">✦</div>
+      <h3>No cards yet</h3>
+      <p>Add your first card below.</p>
+    </div>`;
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('cardCounter').textContent = '';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  const inner = document.getElementById('cardInner');
+  if (inner) inner.classList.toggle('flipped', isFlipped);
+  const btns = document.getElementById('responseButtons');
+  if (btns) btns.classList.toggle('visible', isFlipped);
+}
+
+function respond(rating) {
+  if (rating === 'again') {
+    const card = queue[currentIndex];
+    queue.splice(currentIndex, 1);
+    queue.splice(Math.min(currentIndex+3, queue.length), 0, card);
+  } else { currentIndex++; }
+  isFlipped = false;
+  renderCard();
+}
+
+function populateCategorySelect() {
+  const sel = document.getElementById('inputCategory');
+  sel.innerHTML = Object.entries(decks).map(([key, deck]) =>
+    `<option value="${key}">${deck.label}</option>`
+  ).join('');
+}
+
+function openAddForm() {
+  editingCardId = null;
+  document.getElementById('formTitle').textContent = 'New card';
+  document.getElementById('saveBtn').textContent = 'Add card';
+  populateCategorySelect();
+  document.getElementById('inputCategory').value = currentDeck;
+  ['inputFrench','inputEnglish','inputExample','inputGrammar'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('addForm').classList.add('open');
+  document.getElementById('inputFrench').focus();
+}
+
+function closeAddForm() {
+  document.getElementById('addForm').classList.remove('open');
+  editingCardId = null;
+}
+
+function editCard(deckKey, idx) {
+  editingCardId = { deckKey, idx };
+  const card = decks[deckKey].cards[idx];
+  document.getElementById('formTitle').textContent = 'Edit card';
+  document.getElementById('saveBtn').textContent = 'Save changes';
+  populateCategorySelect();
+  document.getElementById('inputCategory').value = deckKey;
+  document.getElementById('inputFrench').value = card.fr;
+  document.getElementById('inputEnglish').value = card.en;
+  document.getElementById('inputExample').value = card.ex || '';
+  document.getElementById('inputGrammar').value = card.grammar || '';
+  document.getElementById('addForm').classList.add('open');
+  document.getElementById('addForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function deleteCard(deckKey, idx) {
+  const card = decks[deckKey].cards[idx];
+  if (!confirm(`Delete "${card.fr}"?`)) return;
+  decks[deckKey].cards.splice(idx, 1);
+  saveDecks();
+  if (mode === 'study') initDeck(); else render();
+}
+
+function saveCard() {
+  const fr = document.getElementById('inputFrench').value.trim();
+  const en = document.getElementById('inputEnglish').value.trim();
+  const ex = document.getElementById('inputExample').value.trim();
+  const grammar = document.getElementById('inputGrammar').value.trim();
+  const targetDeck = document.getElementById('inputCategory').value;
+  if (!fr || !en) { alert('French and English are required'); return; }
+
+  if (editingCardId) {
+    const { deckKey, idx } = editingCardId;
+    const original = decks[deckKey].cards[idx];
+    const origFr = original._origFr || original.fr;
+    if (deckKey === targetDeck) {
+      decks[deckKey].cards[idx] = {
+        ...original,
+        fr, en, ex, grammar,
+        _origFr: original.userAdded ? undefined : origFr
+      };
+    } else {
+      decks[deckKey].cards.splice(idx, 1);
+      decks[targetDeck].cards.push({ fr, en, ex, grammar, userAdded: true });
+    }
+  } else {
+    decks[targetDeck].cards.push({ fr, en, ex, grammar, userAdded: true });
+  }
+
+  saveDecks();
+  closeAddForm();
+  currentDeck = targetDeck;
+  if (mode === 'study') initDeck(); else render();
+}
+
+populateCategorySelect();
+initDeck();
+</script>
+</body>
+</html>
