@@ -5,115 +5,170 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Cartes de Mots</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,800;1,9..144,900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --cream: #F7F3EE; --warm: #EDE5D8; --sand: #D4C5B0;
-    --clay: #9B7E6A; --dark: #2C2420; --accent: #7A6652;
-    --green: #5C7A62; --rust: #B5654A; --shadow: rgba(44,36,32,0.08);
+    --ivory: #F0EBDF; --cream: #F0EBDF; --paper: #FAF6EB; --warm: #E5DCC9; --sand: #C9B89A;
+    --clay: #8C7B68;
+    --ink: #1B1638; --obsidian: #0E0A24; --dark: #1B1638;
+    --pink: #E84A93; --pink-deep: #B83576; --pink-soft: rgba(232,74,147,0.14); --pink-rgb: 232,74,147;
+    --neon: #C5FF3D; --cyan: #00E5FF;
+    --accent: #8C7B68; --green: #2D5A3D; --green-rgb: 45,90,61; --rust: #B5654A; --gold: #D4A24C;
+    --shadow: rgba(27,22,56,0.16); --shadow-deep: rgba(14,10,36,0.42);
+    --glass-bg: rgba(240,235,223,0.55); --glass-strong: rgba(255,250,240,0.78); --glass-border: rgba(255,255,255,0.7); --glass-line: rgba(27,22,56,0.08);
   }
   body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--cream); color: var(--dark);
+    font-family: 'Manrope', sans-serif;
+    background: var(--ivory);
+    background-image:
+      radial-gradient(at 14% 8%, rgba(var(--pink-rgb),0.22) 0%, transparent 38%),
+      radial-gradient(at 90% 18%, rgba(27,22,56,0.18) 0%, transparent 42%),
+      radial-gradient(at 80% 88%, rgba(var(--pink-rgb),0.16) 0%, transparent 44%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-attachment: fixed, fixed, fixed, fixed;
+    background-size: auto, auto, auto, 200px 200px;
+    color: var(--ink);
     min-height: 100vh; display: flex; flex-direction: column;
     align-items: center; padding: 20px 16px 60px;
   }
-  header { text-align: center; margin-bottom: 24px; width: 100%; }
-  .app-title { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; letter-spacing: 0.05em; }
-  .app-subtitle { font-size: 0.7rem; color: var(--clay); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 4px; font-weight: 500; }
-  .progress-bar { width: 100%; max-width: 380px; height: 2px; background: var(--sand); border-radius: 2px; margin: 14px auto 0; overflow: hidden; }
-  .progress-fill { height: 100%; background: var(--clay); border-radius: 2px; transition: width 0.4s ease; }
+  header { text-align: center; margin-bottom: 24px; width: 100%; max-width: 380px; position: relative; }
+  .app-title { font-family: 'Fraunces', serif; font-size: 3.4rem; font-weight: 900; font-style: italic; letter-spacing: -0.04em; line-height: 0.95; color: var(--ink); font-variation-settings: "opsz" 144; margin: 4px 0 0; }
+  .app-title em { color: var(--pink); font-style: italic; }
+  .memory-btn { position: fixed; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 50; width: 30px; height: 30px; border-radius: 50%; background: transparent; border: 1px solid rgba(27,22,56,0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; opacity: 0.45; }
+  .memory-btn:hover { opacity: 1; border-color: var(--pink); }
+  .memory-btn:hover svg { fill: var(--pink); }
+  .memory-btn:active { transform: scale(0.94); }
+  .memory-btn svg { width: 13px; height: 13px; fill: var(--ink); transition: fill 0.2s; }
+  .app-subtitle { font-size: 0.62rem; color: var(--ink); letter-spacing: 0.32em; text-transform: uppercase; margin-top: 10px; font-weight: 600; opacity: 0.65; }
+  .progress-bar { width: 100%; max-width: 380px; height: 3px; background: rgba(20,22,58,0.07); border-radius: 4px; margin: 14px auto 0; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, var(--ink) 0%, var(--pink) 100%); border-radius: 4px; transition: width 0.4s ease; }
   .card-counter { font-size: 0.68rem; color: var(--clay); text-align: center; margin-top: 7px; letter-spacing: 0.08em; }
 
   .deck-tabs { display: flex; gap: 8px; width: 100%; max-width: 380px; margin-bottom: 18px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
   .deck-tabs::-webkit-scrollbar { display: none; }
-  .deck-tab { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; border: 1px solid var(--sand); background: none; font-family: 'DM Sans', sans-serif; font-size: 0.74rem; color: var(--clay); cursor: pointer; letter-spacing: 0.04em; transition: all 0.2s; white-space: nowrap; }
-  .deck-tab.active { background: var(--dark); color: var(--cream); border-color: var(--dark); }
+  .deck-tab { flex-shrink: 0; padding: 9px 16px; border-radius: 999px; border: 1px solid rgba(14,6,16,0.20); background: transparent; font-family: 'Manrope', sans-serif; font-size: 0.78rem; font-weight: 500; color: var(--ink); cursor: pointer; letter-spacing: 0; text-transform: none; transition: all 0.2s ease; white-space: nowrap; }
+  .deck-tab:hover { border-color: var(--pink); color: var(--pink); }
+  .deck-tab.active { background: var(--pink); color: var(--ink); border-color: var(--pink); box-shadow: 0 14px 28px rgba(var(--pink-rgb),0.32), 0 4px 8px rgba(var(--pink-rgb),0.18); }
+  .deck-tab.active .count { color: var(--ink); opacity: 0.65; }
   .deck-tab .count { opacity: 0.55; font-size: 0.7rem; margin-left: 4px; }
 
-  .mode-toggle { display: flex; gap: 4px; width: 100%; max-width: 380px; margin-bottom: 18px; background: var(--warm); border-radius: 10px; padding: 3px; }
-  .mode-btn { flex: 1; padding: 8px; border: none; background: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.74rem; color: var(--clay); cursor: pointer; letter-spacing: 0.05em; transition: all 0.2s; }
-  .mode-btn.active { background: white; color: var(--dark); box-shadow: 0 1px 3px var(--shadow); }
+  .mode-toggle { display: flex; gap: 0; width: 100%; max-width: 380px; margin-bottom: 18px; background: transparent; border: 1px solid var(--ink); border-radius: 999px; padding: 4px; overflow: hidden; }
+  .mode-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 0.82rem; font-weight: 500; color: var(--ink); cursor: pointer; letter-spacing: 0; text-transform: none; transition: all 0.25s ease; }
+  .mode-btn.active { background: var(--ink); color: var(--ivory); font-weight: 600; }
 
   .card-scene { width: 100%; max-width: 380px; height: 280px; perspective: 1000px; cursor: pointer; margin-bottom: 22px; }
-  .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4,0,0.2,1); }
+  .card-inner { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.65s cubic-bezier(0.34, 1.15, 0.64, 1); }
   .card-inner.flipped { transform: rotateY(180deg); }
-  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px; }
-  .card-front { background: white; border: 1px solid var(--warm); box-shadow: 0 4px 24px var(--shadow); }
-  .card-back { background: var(--dark); transform: rotateY(180deg); box-shadow: 0 4px 24px rgba(44,36,32,0.15); }
-  .card-label { font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; color: var(--sand); }
-  .card-word { font-family: 'Cormorant Garamond', serif; font-size: 1.95rem; font-weight: 300; text-align: center; line-height: 1.2; color: var(--dark); padding: 0 8px; }
-  .card-back .card-word { color: var(--cream); font-size: 1.65rem; }
-  .card-example { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--sand); text-align: center; margin-top: 10px; font-style: italic; line-height: 1.5; padding: 0 8px; }
-  .grammar-tag { display: inline-block; font-size: 0.65rem; letter-spacing: 0.08em; color: var(--rust); background: rgba(181,101,74,0.08); padding: 3px 10px; border-radius: 10px; margin-top: 10px; font-style: normal; font-family: 'DM Sans', sans-serif; font-weight: 500; }
-  .card-back .grammar-tag { color: var(--sand); background: rgba(212,197,176,0.12); }
-  .tense-tag { display: inline-block; font-size: 0.62rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); background: rgba(122,102,82,0.08); padding: 3px 10px; border-radius: 10px; margin-top: 6px; font-family: 'DM Sans', sans-serif; font-weight: 500; }
-  .card-back .tense-tag { color: var(--sand); background: rgba(212,197,176,0.12); }
-  .tap-hint { font-size: 0.6rem; color: var(--sand); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 16px; opacity: 0.55; }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 24px; overflow: hidden; }
+  .card-front { background: linear-gradient(160deg, var(--paper) 0%, var(--ivory) 100%); border: 1px solid rgba(27,22,56,0.10); box-shadow: 0 30px 60px var(--shadow), 0 6px 14px rgba(27,22,56,0.10); }
+  .card-back { background: linear-gradient(160deg, #2A2150 0%, #150E32 100%); transform: rotateY(180deg); box-shadow: 0 30px 60px var(--shadow-deep), inset 0 1px 0 rgba(var(--pink-rgb),0.10); }
+  .card-back::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 100% 0%, rgba(var(--pink-rgb),0.20) 0%, transparent 50%); pointer-events: none; }
+  .card-label { font-family: 'Manrope', sans-serif; font-size: 0.62rem; letter-spacing: 0.20em; text-transform: uppercase; font-weight: 600; margin-bottom: 14px; color: var(--pink); }
+  .card-back .card-label { color: var(--pink); }
+  .card-word { font-family: 'Fraunces', serif; font-size: 1.78rem; font-weight: 500; font-style: normal; text-align: center; line-height: 1.18; color: var(--ink); padding: 0 8px; letter-spacing: -0.012em; font-variation-settings: "opsz" 36; }
+  .card-back .card-word { color: var(--ivory); font-size: 1.5rem; font-weight: 500; }
+  .card-example { font-family: 'Fraunces', serif; font-size: 0.94rem; color: rgba(14,6,16,0.62); text-align: center; margin-top: 14px; font-style: italic; line-height: 1.5; padding: 0 8px; font-weight: 400; font-variation-settings: "opsz" 24; }
+  .card-back .card-example { color: rgba(240,235,223,0.7); }
+  .grammar-tag { display: inline-block; font-size: 0.7rem; letter-spacing: 0; text-transform: none; color: var(--ink); background: var(--pink); padding: 4px 12px; border-radius: 999px; margin-top: 14px; font-style: normal; font-family: 'Manrope', sans-serif; font-weight: 600; }
+  .card-back .grammar-tag { color: var(--ink); background: var(--pink); }
+  .tense-tag { display: inline-block; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); background: var(--pink); padding: 4px 12px; border-radius: 999px; margin-top: 10px; font-family: 'Manrope', sans-serif; font-weight: 600; }
+  .card-back .tense-tag { color: var(--ink); background: var(--pink); }
+  .tap-hint { font-family: 'Fraunces', serif; font-size: 0.85rem; font-style: italic; font-weight: 400; color: var(--ink); letter-spacing: 0; text-transform: none; margin-top: 22px; opacity: 0.5; font-variation-settings: "opsz" 14; }
 
-  .audio-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--warm); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-  .card-back .audio-btn { background: rgba(247,243,238,0.1); border-color: rgba(212,197,176,0.3); }
-  .audio-btn:hover { transform: scale(1.05); }
+  .audio-btn { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 5px; border: 1px solid rgba(14,6,16,0.18); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+  .card-back .audio-btn { background: transparent; border-color: rgba(var(--pink-rgb),0.4); }
+  .audio-btn:hover { background: var(--pink); border-color: var(--pink); }
+  .audio-btn:hover svg { fill: var(--ink); }
   .audio-btn:active { transform: scale(0.92); }
-  .audio-btn svg { width: 14px; height: 14px; fill: var(--clay); }
-  .card-back .audio-btn svg { fill: var(--sand); }
+  .audio-btn svg { width: 14px; height: 14px; fill: var(--ink); transition: fill 0.2s; }
+  .card-back .audio-btn svg { fill: var(--pink); }
 
   .response-buttons { display: flex; gap: 10px; width: 100%; max-width: 380px; margin-bottom: 24px; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
   .response-buttons.visible { opacity: 1; pointer-events: all; }
-  .btn { flex: 1; padding: 13px 8px; border: none; border-radius: 11px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; cursor: pointer; transition: transform 0.15s ease; }
-  .btn:active { transform: scale(0.96); }
-  .btn-again { background: #F0E8E4; color: #8B5E52; }
-  .btn-hard { background: #EDE8DD; color: var(--accent); }
-  .btn-good { background: var(--green); color: white; }
+  .btn { flex: 1; padding: 14px 8px; border: 1px solid var(--ink); border-radius: 999px; font-family: 'Manrope', sans-serif; font-size: 0.82rem; font-weight: 600; letter-spacing: 0; text-transform: none; cursor: pointer; transition: all 0.18s ease; }
+  .btn-again { background: transparent; color: var(--ink); }
+  .btn-again:hover { background: var(--ink); color: var(--ivory); }
+  .btn-hard { background: var(--ink); color: var(--ivory); border-color: var(--ink); }
+  .btn-hard:hover { background: var(--obsidian); }
+  .btn-good { background: var(--green); color: var(--ivory); border-color: var(--green); box-shadow: 0 14px 32px rgba(var(--green-rgb),0.32), 0 4px 10px rgba(var(--green-rgb),0.20); }
+  .btn-good:hover { background: #1F4530; border-color: #1F4530; box-shadow: 0 18px 38px rgba(var(--green-rgb),0.38), 0 6px 12px rgba(var(--green-rgb),0.22); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(0.97); }
 
   .browse-list { width: 100%; max-width: 380px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
-  .browse-card { background: white; border: 1px solid var(--warm); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 1px 3px var(--shadow); transition: all 0.2s; position: relative; }
-  .browse-fr { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-weight: 400; line-height: 1.3; padding-right: 110px; }
-  .browse-en { font-size: 0.78rem; color: var(--clay); padding-right: 110px; }
-  .browse-ex { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.85rem; color: var(--accent); margin-top: 4px; padding-right: 110px; }
+  .browse-card { background: var(--paper); border: 1px solid rgba(14,6,16,0.10); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; transition: all 0.2s; position: relative; }
+  .browse-card:hover { border-color: var(--pink); transform: translateY(-1px); }
+  .browse-fr { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; font-style: italic; line-height: 1.25; padding-right: 110px; color: var(--ink); }
+  .browse-en { font-family: 'Manrope', sans-serif; font-size: 0.78rem; color: var(--ink); padding-right: 110px; opacity: 0.7; }
+  .browse-ex { font-family: 'Fraunces', serif; font-style: italic; font-size: 0.88rem; color: var(--pink-deep); margin-top: 4px; padding-right: 110px; }
   .browse-actions { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
-  .icon-btn { width: 30px; height: 30px; border: none; background: var(--warm); border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-  .icon-btn:hover { background: var(--sand); }
+  .icon-btn { width: 30px; height: 30px; border: 1px solid rgba(14,6,16,0.15); background: transparent; border-radius: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.18s; }
+  .icon-btn:hover { background: var(--pink); border-color: var(--pink); }
+  .icon-btn:hover svg { fill: var(--ink); }
   .icon-btn:active { transform: scale(0.9); }
-  .icon-btn svg { width: 13px; height: 13px; fill: var(--clay); }
+  .icon-btn svg { width: 13px; height: 13px; fill: var(--ink); transition: fill 0.18s; }
 
   .add-section { width: 100%; max-width: 380px; }
-  .add-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--dark); border: none; border-radius: 12px; padding: 14px 16px; width: 100%; cursor: pointer; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--cream); letter-spacing: 0.05em; font-weight: 500; transition: opacity 0.2s; margin-bottom: 12px; }
-  .add-toggle:hover { opacity: 0.9; }
-  .add-form { display: none; flex-direction: column; gap: 10px; background: white; border: 1px solid var(--warm); border-radius: 14px; padding: 18px; box-shadow: 0 4px 16px var(--shadow); }
+  .add-toggle { display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--ink); border: 1px solid var(--ink); border-radius: 999px; padding: 15px 16px; width: 100%; cursor: pointer; font-family: 'Manrope', sans-serif; font-size: 0.92rem; color: var(--ivory); letter-spacing: 0; font-weight: 500; text-transform: none; transition: all 0.2s; margin-bottom: 12px; }
+  .add-toggle:hover { background: var(--pink); color: var(--ink); border-color: var(--pink); box-shadow: 0 16px 32px rgba(var(--pink-rgb),0.32), 0 4px 10px rgba(var(--pink-rgb),0.18); }
+  .add-form { display: none; flex-direction: column; gap: 10px; background: var(--paper); border: 1px solid rgba(14,6,16,0.10); border-radius: 8px; padding: 20px; }
   .add-form.open { display: flex; }
-  .form-title { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 400; margin-bottom: 4px; }
+  .form-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; font-style: italic; margin-bottom: 6px; color: var(--ink); }
   .add-form input, .add-form select {
-    border: 1px solid var(--warm); border-radius: 8px; padding: 11px 14px;
-    font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--dark);
-    background: var(--cream); outline: none; transition: border-color 0.2s; width: 100%;
+    border: 1px solid rgba(14,6,16,0.18); border-radius: 5px; padding: 12px 14px;
+    font-family: 'Manrope', sans-serif; font-size: 0.9rem; color: var(--ink);
+    background: var(--ivory); outline: none; transition: border-color 0.2s; width: 100%;
   }
-  .add-form input:focus, .add-form select:focus { border-color: var(--clay); }
-  .add-form input::placeholder { color: var(--sand); }
+  .add-form input:focus, .add-form select:focus { border-color: var(--pink); }
+  .add-form input::placeholder { color: rgba(14,6,16,0.35); }
   .form-row { display: flex; gap: 8px; }
   .form-row > * { flex: 1; }
-  .btn-add { background: var(--dark); color: var(--cream); border: none; border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 500; cursor: pointer; letter-spacing: 0.05em; flex: 2; }
-  .btn-cancel { background: none; border: 1px solid var(--sand); color: var(--clay); border-radius: 8px; padding: 12px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; flex: 1; }
+  .btn-add { background: var(--pink); color: var(--ink); border: 1px solid var(--pink); border-radius: 999px; padding: 13px; font-family: 'Manrope', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; letter-spacing: 0; text-transform: none; flex: 2; transition: all 0.2s; }
+  .btn-add:hover { background: var(--pink-deep); border-color: var(--pink-deep); color: var(--ivory); }
+  .btn-cancel { background: transparent; border: 1px solid var(--ink); color: var(--ink); border-radius: 999px; padding: 13px; font-family: 'Manrope', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; flex: 1; letter-spacing: 0; text-transform: none; transition: all 0.2s; }
+  .btn-cancel:hover { background: var(--ink); color: var(--ivory); }
   .form-actions { display: flex; gap: 8px; }
 
   .done-state { text-align: center; padding: 40px 20px; width: 100%; max-width: 380px; }
-  .done-icon { font-size: 2.4rem; margin-bottom: 14px; }
-  .done-state h3 { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 300; margin-bottom: 8px; }
-  .done-state p { font-size: 0.8rem; color: var(--clay); margin-bottom: 20px; line-height: 1.5; }
-  .btn-restart { background: var(--dark); color: var(--cream); border: none; border-radius: 10px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; letter-spacing: 0.05em; }
+  .done-icon { font-family: 'Fraunces', serif; font-size: 3rem; font-style: italic; font-weight: 800; color: var(--pink); margin-bottom: 8px; line-height: 1; font-variation-settings: "opsz" 144; }
+  .done-state h3 { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 800; font-style: italic; margin-bottom: 10px; color: var(--ink); letter-spacing: -0.02em; }
+  .done-state p { font-family: 'Manrope', sans-serif; font-size: 0.7rem; color: var(--ink); margin-bottom: 24px; line-height: 1.6; letter-spacing: 0.18em; text-transform: uppercase; opacity: 0.6; font-weight: 600; }
+  .btn-restart { background: var(--pink); color: var(--ink); border: 1px solid var(--pink); border-radius: 999px; padding: 14px 32px; font-family: 'Manrope', sans-serif; font-size: 0.92rem; font-weight: 600; cursor: pointer; letter-spacing: 0; text-transform: none; transition: all 0.2s; box-shadow: 0 14px 30px rgba(var(--pink-rgb),0.30), 0 4px 8px rgba(var(--pink-rgb),0.16); }
+  .btn-restart:hover { background: var(--pink-deep); border-color: var(--pink-deep); color: var(--ivory); }
 
-  .data-actions { display: flex; justify-content: center; gap: 22px; width: 100%; max-width: 380px; margin-top: 22px; }
-  .data-link { background: none; border: none; color: var(--clay); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; padding: 6px 4px; font-family: 'DM Sans', sans-serif; font-weight: 500; opacity: 0.7; transition: opacity 0.2s; }
-  .data-link:hover { opacity: 1; }
+  .memory-sheet { display: none; position: fixed; inset: 0; background: rgba(14,6,16,0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .memory-sheet.open { display: flex; }
+  .memory-sheet-inner { background: var(--ivory); border: 1px solid var(--ink); border-radius: 8px; padding: 32px 26px; width: 100%; max-width: 340px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 40px 100px rgba(14,6,16,0.55); position: relative; overflow: hidden; }
+  .memory-sheet-inner::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: var(--pink); }
+  .memory-title { font-family: 'Fraunces', serif; font-size: 2rem; font-weight: 800; font-style: italic; text-align: left; margin-bottom: 4px; color: var(--ink); letter-spacing: -0.02em; }
+  .memory-subtitle { font-family: 'Manrope', sans-serif; font-size: 0.66rem; color: var(--ink); text-align: left; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 18px; line-height: 1.5; opacity: 0.6; font-weight: 600; }
+  .memory-action { background: var(--ink); color: var(--ivory); border: 1px solid var(--ink); border-radius: 999px; padding: 14px; font-family: 'Manrope', sans-serif; font-size: 0.92rem; font-weight: 500; cursor: pointer; letter-spacing: 0; text-transform: none; transition: all 0.2s; }
+  .memory-action:hover { background: var(--pink); border-color: var(--pink); color: var(--ink); }
+  .memory-action.gold { background: var(--pink); border-color: var(--pink); color: var(--ink); }
+  .memory-action.gold:hover { background: var(--pink-deep); border-color: var(--pink-deep); color: var(--ivory); }
+  .memory-close { background: transparent; border: none; color: var(--ink); padding: 11px; font-family: 'Manrope', sans-serif; font-size: 0.7rem; cursor: pointer; margin-top: 4px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 600; opacity: 0.55; transition: opacity 0.2s; }
+  .memory-close:hover { opacity: 1; }
 </style>
 </head>
 <body>
 <header>
-  <div class="app-title">Cartes de Mots</div>
-  <div class="app-subtitle">French Flashcards</div>
+  <button class="memory-btn" onclick="openMemorySheet()" aria-label="Memory">
+    <svg viewBox="0 0 24 24"><path d="M17 3H9c-1.1 0-2 .9-2 2v1H6c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H6V8h11v9zm3-3h-1V8c0-1.1-.9-2-2-2H9V5h11v9z"/></svg>
+  </button>
+  <div class="app-title">Cartes de <em>Mots</em></div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="card-counter" id="cardCounter"></div>
 </header>
+
+<div class="memory-sheet" id="memorySheet" onclick="if(event.target===this)closeMemorySheet()">
+  <div class="memory-sheet-inner">
+    <div class="memory-title">Memory</div>
+    <div class="memory-subtitle">Back up your cards or restore from a file</div>
+    <button class="memory-action" onclick="closeMemorySheet(); exportData();">Export your cards</button>
+    <button class="memory-action gold" onclick="importData();">Import a backup</button>
+    <button class="memory-close" onclick="closeMemorySheet()">Close</button>
+  </div>
+</div>
 
 <div class="deck-tabs" id="deckTabs"></div>
 
@@ -132,7 +187,7 @@
     <input type="text" id="inputEnglish" placeholder="English meaning" />
     <input type="text" id="inputExample" placeholder="Example sentence (optional)" />
     <div class="form-row">
-      <input type="text" id="inputGrammar" placeholder="Tag e.g. + subj., je plie" />
+      <input type="text" id="inputGrammar" placeholder="Tag — slang, formal, + subj., je plie" />
       <select id="inputCategory"></select>
     </div>
     <div class="form-actions">
@@ -142,14 +197,14 @@
   </div>
 </div>
 
-<div class="data-actions">
-  <button class="data-link" onclick="exportData()">Export</button>
-  <button class="data-link" onclick="importData()">Import</button>
-  <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="handleImportFile(event)" />
-</div>
+<input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="handleImportFile(event)" />
 
 <script>
-const DEFAULT_DECKS = {
+function openMemorySheet() { document.getElementById('memorySheet').classList.add('open'); }
+function closeMemorySheet() { document.getElementById('memorySheet').classList.remove('open'); }
+</script>
+<script>
+const DEFAULT_DECKS_RAW = {
   yoga: {
     label: "Yoga",
     cards: [
@@ -436,7 +491,173 @@ const DEFAULT_DECKS = {
       { fr: "(je) parler", en: "je parle", ex: "Je parle français", grammar: "présent (-er)" },
       { fr: "(j') parler", en: "j'ai parlé", ex: "J'ai parlé avec elle", grammar: "passé composé" },
       { fr: "(je) parler", en: "je parlais", ex: "Je parlais pas bien à l'époque", grammar: "imparfait" },
-      { fr: "(je) parler", en: "je parlerai", ex: "Je lui parlerai demain", grammar: "futur simple" }
+      { fr: "(je) parler", en: "je parlerai", ex: "Je lui parlerai demain", grammar: "futur simple" },
+
+      // === TIER 2 / 3 EXPANSION ===
+
+      // AIMER (-er)
+      { fr: "(j') aimer", en: "j'aime", ex: "J'aime le silence du matin", grammar: "présent (-er)" },
+      { fr: "(j') aimer", en: "j'ai aimé", ex: "J'ai aimé ce livre", grammar: "passé composé" },
+      { fr: "(j') aimer", en: "j'aimais", ex: "J'aimais cette époque", grammar: "imparfait" },
+      { fr: "(j') aimer", en: "j'aimerais", ex: "J'aimerais essayer", grammar: "conditionnel (very common)" },
+
+      // COMPRENDRE (like prendre)
+      { fr: "(je) comprendre", en: "je comprends", ex: "Je comprends bien", grammar: "présent" },
+      { fr: "(j') comprendre", en: "j'ai compris", ex: "J'ai compris la consigne", grammar: "passé composé" },
+      { fr: "(je) comprendre", en: "je comprenais", ex: "Je ne comprenais pas tout", grammar: "imparfait" },
+      { fr: "(que je) comprendre", en: "que je comprenne", ex: "Il faut que je comprenne", grammar: "subjonctif" },
+
+      // ATTENDRE (-re)
+      { fr: "(j') attendre", en: "j'attends", ex: "J'attends le bus", grammar: "présent (-re)" },
+      { fr: "(j') attendre", en: "j'ai attendu", ex: "J'ai attendu deux heures", grammar: "passé composé" },
+      { fr: "(j') attendre", en: "j'attendais", ex: "Je t'attendais depuis longtemps", grammar: "imparfait" },
+      { fr: "(que j') attendre", en: "que j'attende", ex: "Avant que j'attende encore", grammar: "subjonctif" },
+
+      // DONNER (-er)
+      { fr: "(je) donner", en: "je donne", ex: "Je te donne ça", grammar: "présent (-er)" },
+      { fr: "(j') donner", en: "j'ai donné", ex: "J'ai donné mon avis", grammar: "passé composé" },
+      { fr: "(je) donner", en: "je donnais", ex: "Je donnais beaucoup à l'époque", grammar: "imparfait" },
+
+      // TROUVER (-er)
+      { fr: "(je) trouver", en: "je trouve", ex: "Je trouve ça beau", grammar: "présent (-er)" },
+      { fr: "(j') trouver", en: "j'ai trouvé", ex: "J'ai trouvé mes clés", grammar: "passé composé" },
+      { fr: "(je) trouver", en: "je trouvais", ex: "Je trouvais ça bizarre", grammar: "imparfait" },
+
+      // DEMANDER (-er)
+      { fr: "(je) demander", en: "je demande", ex: "Je demande pardon", grammar: "présent (-er)" },
+      { fr: "(j') demander", en: "j'ai demandé", ex: "J'ai demandé l'addition", grammar: "passé composé" },
+      { fr: "(je me) demander", en: "je me demandais", ex: "Je me demandais où tu étais", grammar: "imparfait (v.pron.)" },
+
+      // REGARDER (-er)
+      { fr: "(je) regarder", en: "je regarde", ex: "Je regarde la mer", grammar: "présent (-er)" },
+      { fr: "(j') regarder", en: "j'ai regardé", ex: "J'ai regardé un film", grammar: "passé composé" },
+      { fr: "(je) regarder", en: "je regardais", ex: "Je regardais par la fenêtre", grammar: "imparfait" },
+
+      // DEVENIR (like venir)
+      { fr: "(je) devenir", en: "je deviens", ex: "Je deviens nerveux", grammar: "présent (irreg.)" },
+      { fr: "(je) devenir", en: "je suis devenu·e", ex: "Je suis devenue prof", grammar: "passé composé (être)" },
+      { fr: "(que je) devenir", en: "que je devienne", ex: "Il faut que je devienne plus patient", grammar: "subjonctif" },
+
+      // SORTIR (like partir)
+      { fr: "(je) sortir", en: "je sors", ex: "Je sors ce soir", grammar: "présent (irreg.)" },
+      { fr: "(je) sortir", en: "je suis sorti·e", ex: "Je suis sortie tôt", grammar: "passé composé (être)" },
+      { fr: "(je) sortir", en: "je sortais", ex: "Je sortais beaucoup à l'époque", grammar: "imparfait" },
+      { fr: "(que je) sortir", en: "que je sorte", ex: "Avant que je sorte", grammar: "subjonctif" },
+
+      // ÉCRIRE (irreg.)
+      { fr: "(j') écrire", en: "j'écris", ex: "J'écris une lettre", grammar: "présent (irreg.)" },
+      { fr: "(nous) écrire", en: "nous écrivons", ex: "Nous écrivons souvent", grammar: "présent" },
+      { fr: "(j') écrire", en: "j'ai écrit", ex: "J'ai écrit un message", grammar: "passé composé" },
+      { fr: "(j') écrire", en: "j'écrivais", ex: "J'écrivais à mes parents", grammar: "imparfait" },
+      { fr: "(que j') écrire", en: "que j'écrive", ex: "Il faut que j'écrive ça", grammar: "subjonctif" },
+
+      // LIRE (irreg.)
+      { fr: "(je) lire", en: "je lis", ex: "Je lis le journal", grammar: "présent (irreg.)" },
+      { fr: "(j') lire", en: "j'ai lu", ex: "J'ai lu ton message", grammar: "passé composé" },
+      { fr: "(je) lire", en: "je lisais", ex: "Je lisais quand tu as appelé", grammar: "imparfait" },
+      { fr: "(que je) lire", en: "que je lise", ex: "Il faut que je lise ça", grammar: "subjonctif" },
+
+      // OUVRIR (irreg., conjugates like -er)
+      { fr: "(j') ouvrir", en: "j'ouvre", ex: "J'ouvre la porte", grammar: "présent (irreg.)" },
+      { fr: "(j') ouvrir", en: "j'ai ouvert", ex: "J'ai ouvert la fenêtre", grammar: "passé composé" },
+      { fr: "(j') ouvrir", en: "j'ouvrais", ex: "J'ouvrais la boutique le matin", grammar: "imparfait" },
+
+      // RESTER (-er, être)
+      { fr: "(je) rester", en: "je reste", ex: "Je reste à la maison", grammar: "présent (-er)" },
+      { fr: "(je) rester", en: "je suis resté·e", ex: "Je suis restée tard", grammar: "passé composé (être)" },
+      { fr: "(je) rester", en: "je restais", ex: "Je restais souvent ici", grammar: "imparfait" },
+
+      // CONNAÎTRE (irreg.)
+      { fr: "(je) connaître", en: "je connais", ex: "Je connais Paris", grammar: "présent (irreg.)" },
+      { fr: "(j') connaître", en: "j'ai connu", ex: "J'ai connu mes meilleurs amis ici", grammar: "passé composé" },
+      { fr: "(je) connaître", en: "je connaissais", ex: "Je connaissais bien la ville", grammar: "imparfait" },
+      { fr: "(que je) connaître", en: "que je connaisse", ex: "Bien que je connaisse l'endroit", grammar: "subjonctif" },
+
+      // SUIVRE (irreg.)
+      { fr: "(je) suivre", en: "je suis", ex: "Je te suis", grammar: "présent (irreg., like être)" },
+      { fr: "(j') suivre", en: "j'ai suivi", ex: "J'ai suivi tes conseils", grammar: "passé composé" },
+      { fr: "(je) suivre", en: "je suivais", ex: "Je suivais des cours de yoga", grammar: "imparfait" },
+
+      // MANGER (-ger spelling change)
+      { fr: "(je) manger", en: "je mange", ex: "Je mange une pomme", grammar: "présent (-ger)" },
+      { fr: "(nous) manger", en: "nous mangeons", ex: "Nous mangeons à 20h", grammar: "présent (-ger spelling)" },
+      { fr: "(j') manger", en: "j'ai mangé", ex: "J'ai mangé italien hier soir", grammar: "passé composé" },
+      { fr: "(je) manger", en: "je mangeais", ex: "Je mangeais souvent là", grammar: "imparfait (-ger)" },
+
+      // CHOISIR (-ir, like finir)
+      { fr: "(je) choisir", en: "je choisis", ex: "Je choisis ce plat", grammar: "présent (-ir)" },
+      { fr: "(nous) choisir", en: "nous choisissons", ex: "Nous choisissons ensemble", grammar: "présent (-ir)" },
+      { fr: "(j') choisir", en: "j'ai choisi", ex: "J'ai choisi cette robe", grammar: "passé composé" },
+
+      // PAYER (-yer)
+      { fr: "(je) payer", en: "je paie", ex: "Je paie l'addition", grammar: "présent (-yer)" },
+      { fr: "(j') payer", en: "j'ai payé", ex: "J'ai payé en espèces", grammar: "passé composé" },
+      { fr: "(je) payer", en: "je paierai", ex: "Je paierai demain", grammar: "futur simple" },
+
+      // TENIR (like venir)
+      { fr: "(je) tenir", en: "je tiens", ex: "Je tiens à toi", grammar: "présent (irreg.)" },
+      { fr: "(j') tenir", en: "j'ai tenu", ex: "J'ai tenu ma promesse", grammar: "passé composé" },
+      { fr: "(je) tenir", en: "je tenais", ex: "Je tenais à le voir", grammar: "imparfait" },
+      { fr: "(que je) tenir", en: "que je tienne", ex: "Il faut que je tienne bon", grammar: "subjonctif" },
+
+      // RECEVOIR (irreg.)
+      { fr: "(je) recevoir", en: "je reçois", ex: "Je reçois souvent des lettres", grammar: "présent (irreg.)" },
+      { fr: "(j') recevoir", en: "j'ai reçu", ex: "J'ai reçu ton mail", grammar: "passé composé" },
+      { fr: "(je) recevoir", en: "je recevais", ex: "Je recevais souvent des nouvelles", grammar: "imparfait" },
+
+      // SENTIR (like partir)
+      { fr: "(je) sentir", en: "je sens", ex: "Je sens une odeur", grammar: "présent (irreg.)" },
+      { fr: "(j') sentir", en: "j'ai senti", ex: "J'ai senti la fatigue arriver", grammar: "passé composé" },
+      { fr: "(je) sentir", en: "je sentais", ex: "Je sentais qu'il était fatigué", grammar: "imparfait" },
+
+      // VIVRE (irreg.)
+      { fr: "(je) vivre", en: "je vis", ex: "Je vis à Paris", grammar: "présent (irreg.)" },
+      { fr: "(j') vivre", en: "j'ai vécu", ex: "J'ai vécu en Espagne", grammar: "passé composé" },
+      { fr: "(je) vivre", en: "je vivais", ex: "Je vivais seule à l'époque", grammar: "imparfait" },
+
+      // COMMENCER (-cer spelling change)
+      { fr: "(je) commencer", en: "je commence", ex: "Je commence demain", grammar: "présent (-cer)" },
+      { fr: "(nous) commencer", en: "nous commençons", ex: "Nous commençons à 9h", grammar: "présent (-cer spelling)" },
+      { fr: "(j') commencer", en: "j'ai commencé", ex: "J'ai commencé le yoga", grammar: "passé composé" },
+
+      // ESPÉRER (-érer)
+      { fr: "(j') espérer", en: "j'espère", ex: "J'espère que oui", grammar: "présent (-érer)" },
+      { fr: "(j') espérer", en: "j'ai espéré", ex: "J'ai espéré te voir", grammar: "passé composé" },
+
+      // OUBLIER (-er)
+      { fr: "(j') oublier", en: "j'oublie", ex: "J'oublie tout", grammar: "présent (-er)" },
+      { fr: "(j') oublier", en: "j'ai oublié", ex: "J'ai oublié mes clés", grammar: "passé composé" },
+      { fr: "(j') oublier", en: "j'oubliais", ex: "J'oubliais souvent", grammar: "imparfait" },
+
+      // JETER (-eter, double consonant)
+      { fr: "(je) jeter", en: "je jette", ex: "Je jette ça", grammar: "présent (-eter, double t)" },
+      { fr: "(j') jeter", en: "j'ai jeté", ex: "J'ai jeté un coup d'œil", grammar: "passé composé" },
+
+      // ACHETER (-eter, accent change)
+      { fr: "(j') acheter", en: "j'achète", ex: "J'achète du pain", grammar: "présent (-eter, è)" },
+      { fr: "(j') acheter", en: "j'ai acheté", ex: "J'ai acheté ce livre", grammar: "passé composé" },
+      { fr: "(j') acheter", en: "j'achetais", ex: "J'achetais ici souvent", grammar: "imparfait" },
+
+      // BOIRE (irreg.)
+      { fr: "(je) boire", en: "je bois", ex: "Je bois de l'eau", grammar: "présent (irreg.)" },
+      { fr: "(nous) boire", en: "nous buvons", ex: "Nous buvons un café", grammar: "présent (irreg.)" },
+      { fr: "(j') boire", en: "j'ai bu", ex: "J'ai bu trop de café", grammar: "passé composé" },
+      { fr: "(que je) boire", en: "que je boive", ex: "Avant que je boive", grammar: "subjonctif" },
+
+      // DORMIR (like partir)
+      { fr: "(je) dormir", en: "je dors", ex: "Je dors mal", grammar: "présent (irreg.)" },
+      { fr: "(j') dormir", en: "j'ai dormi", ex: "J'ai bien dormi", grammar: "passé composé" },
+      { fr: "(je) dormir", en: "je dormais", ex: "Je dormais quand tu as appelé", grammar: "imparfait" },
+
+      // COURIR (irreg.)
+      { fr: "(je) courir", en: "je cours", ex: "Je cours tous les matins", grammar: "présent (irreg.)" },
+      { fr: "(j') courir", en: "j'ai couru", ex: "J'ai couru pour rien", grammar: "passé composé" },
+      { fr: "(je) courir", en: "je courais", ex: "Je courais souvent dans le parc", grammar: "imparfait" },
+
+      // SE SOUVENIR (like venir, pronominal)
+      { fr: "(je me) souvenir", en: "je me souviens", ex: "Je me souviens de toi", grammar: "présent (v.pron.)" },
+      { fr: "(je me) souvenir", en: "je me suis souvenu·e", ex: "Je me suis souvenue", grammar: "passé composé (être)" },
+      { fr: "(que je me) souvenir", en: "que je me souvienne", ex: "Il faut que je me souvienne", grammar: "subjonctif" }
     ]
   },
   completer: {
@@ -485,11 +706,26 @@ const DEFAULT_DECKS = {
       { fr: "J'espère qu'il ___ (venir) demain.", en: "viendra", ex: "J'espère qu'il viendra demain.", grammar: "futur (espérer + ind.)" }
     ]
   },
-  mine: { label: "Mes mots", cards: [] }
 };
 
+const DEFAULT_DECKS = {
+  cartes: {
+    label: "Cartes",
+    cards: [
+      ...DEFAULT_DECKS_RAW.yoga.cards,
+      ...DEFAULT_DECKS_RAW.phrases.cards,
+      ...DEFAULT_DECKS_RAW.questions.cards,
+      ...DEFAULT_DECKS_RAW.daily.cards
+    ]
+  },
+  conjugaisons: DEFAULT_DECKS_RAW.conjugaisons,
+  completer: DEFAULT_DECKS_RAW.completer
+};
+
+const LEGACY_DECK_KEYS = ['yoga', 'phrases', 'questions', 'daily', 'mine'];
+
 let decks = loadDecks();
-let currentDeck = 'yoga';
+let currentDeck = 'cartes';
 let mode = 'study';
 let queue = [];
 let currentIndex = 0;
@@ -504,22 +740,29 @@ function loadDecks() {
       const merged = JSON.parse(JSON.stringify(DEFAULT_DECKS));
       Object.keys(parsed).forEach(key => {
         if (key === '_edits') return;
-        if (key === 'mine') {
-          if (parsed[key].cards) merged[key].cards = parsed[key].cards;
-        } else if (merged[key] && parsed[key].cards) {
+        if (!parsed[key].cards) return;
+        if (LEGACY_DECK_KEYS.includes(key)) {
+          if (key === 'mine') {
+            merged.cartes.cards.push(...parsed[key].cards);
+          } else {
+            const userCards = parsed[key].cards.filter(c => c.userAdded);
+            merged.cartes.cards.push(...userCards);
+          }
+        } else if (merged[key]) {
           const userCards = parsed[key].cards.filter(c => c.userAdded);
           merged[key].cards.push(...userCards);
         }
       });
       if (parsed._edits) {
         Object.keys(parsed._edits).forEach(deckKey => {
-          if (!merged[deckKey]) return;
+          const targetKey = LEGACY_DECK_KEYS.includes(deckKey) ? 'cartes' : deckKey;
+          if (!merged[targetKey]) return;
           parsed._edits[deckKey].forEach(edit => {
             if (edit.deleted) {
-              merged[deckKey].cards = merged[deckKey].cards.filter(c => c.fr !== edit.original_fr);
+              merged[targetKey].cards = merged[targetKey].cards.filter(c => c.fr !== edit.original_fr);
             } else if (edit.original_fr && edit.changes) {
-              const idx = merged[deckKey].cards.findIndex(c => c.fr === edit.original_fr);
-              if (idx !== -1) merged[deckKey].cards[idx] = { ...merged[deckKey].cards[idx], ...edit.changes, _origFr: edit.original_fr };
+              const idx = merged[targetKey].cards.findIndex(c => c.fr === edit.original_fr);
+              if (idx !== -1) merged[targetKey].cards[idx] = { ...merged[targetKey].cards[idx], ...edit.changes, _origFr: edit.original_fr };
             }
           });
         });
@@ -534,24 +777,20 @@ function saveDecks() {
   try {
     const toSave = { _edits: {} };
     Object.keys(decks).forEach(key => {
-      if (key === 'mine') {
-        toSave[key] = { cards: decks[key].cards };
-      } else {
-        const userAdded = decks[key].cards.filter(c => c.userAdded);
-        if (userAdded.length) toSave[key] = { cards: userAdded };
-        const defaultCards = DEFAULT_DECKS[key].cards;
-        const currentDefault = decks[key].cards.filter(c => !c.userAdded);
-        const edits = [];
-        defaultCards.forEach(orig => {
-          const found = currentDefault.find(c => c.fr === orig.fr || c._origFr === orig.fr);
-          if (!found) {
-            edits.push({ original_fr: orig.fr, deleted: true });
-          } else if (found._origFr === orig.fr) {
-            edits.push({ original_fr: orig.fr, changes: { fr: found.fr, en: found.en, ex: found.ex, grammar: found.grammar } });
-          }
-        });
-        if (edits.length) toSave._edits[key] = edits;
-      }
+      const userAdded = decks[key].cards.filter(c => c.userAdded);
+      if (userAdded.length) toSave[key] = { cards: userAdded };
+      const defaultCards = DEFAULT_DECKS[key].cards;
+      const currentDefault = decks[key].cards.filter(c => !c.userAdded);
+      const edits = [];
+      defaultCards.forEach(orig => {
+        const found = currentDefault.find(c => c.fr === orig.fr || c._origFr === orig.fr);
+        if (!found) {
+          edits.push({ original_fr: orig.fr, deleted: true });
+        } else if (found._origFr === orig.fr) {
+          edits.push({ original_fr: orig.fr, changes: { fr: found.fr, en: found.en, ex: found.ex, grammar: found.grammar } });
+        }
+      });
+      if (edits.length) toSave._edits[key] = edits;
     });
     localStorage.setItem('cartesDeMots_decks', JSON.stringify(toSave));
   } catch (e) { console.warn('Could not save decks', e); }
@@ -598,8 +837,19 @@ function switchDeck(key) {
   else render();
 }
 
+function getMineCards() {
+  const cards = [];
+  Object.keys(decks).forEach(deckKey => {
+    decks[deckKey].cards.forEach((card, idx) => {
+      if (card.userAdded) cards.push({ ...card, _sourceDeck: deckKey, _sourceIdx: idx });
+    });
+  });
+  return cards;
+}
+
 function initDeck() {
-  queue = shuffle(decks[currentDeck].cards);
+  const baseCards = currentDeck === 'mine' ? getMineCards() : decks[currentDeck].cards;
+  queue = shuffle(baseCards);
   currentIndex = 0;
   isFlipped = false;
   render();
@@ -614,16 +864,22 @@ function render() {
 }
 
 function renderTabs() {
-  document.getElementById('deckTabs').innerHTML = Object.entries(decks).map(([key,deck]) =>
+  const realTabs = Object.entries(decks).map(([key,deck]) =>
     `<button class="deck-tab ${key===currentDeck?'active':''}" onclick="switchDeck('${key}')">${deck.label}<span class="count">${deck.cards.length}</span></button>`
   ).join('');
+  const mineCount = getMineCards().length;
+  const mineTab = `<button class="deck-tab ${currentDeck==='mine'?'active':''}" onclick="switchDeck('mine')">Mes mots<span class="count">${mineCount}</span></button>`;
+  document.getElementById('deckTabs').innerHTML = realTabs + mineTab;
 }
 
 const audioIcon = `<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>`;
 const editIcon = `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
 const trashIcon = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
 
-function isConjugationDeck() {
+function isConjugationDeck(card) {
+  if (card && card._sourceDeck) {
+    return card._sourceDeck === 'conjugaisons' || card._sourceDeck === 'completer';
+  }
   return currentDeck === 'conjugaisons' || currentDeck === 'completer';
 }
 
@@ -632,7 +888,7 @@ function renderCard() {
   document.getElementById('progressFill').style.width = (currentIndex/queue.length*100) + '%';
   document.getElementById('cardCounter').textContent = `${currentIndex+1} / ${queue.length}`;
   // For conjugation/completion decks, the "answer" is on the back; speak the back text
-  const conjugation = isConjugationDeck();
+  const conjugation = isConjugationDeck(card);
   const speakText = conjugation ? (card.ex || card.en) : card.fr;
   const frEsc = JSON.stringify(speakText).replace(/"/g,'&quot;');
   const frontLabel = conjugation ? 'Prompt' : 'Français';
@@ -666,15 +922,18 @@ function renderCard() {
 
 function renderBrowse() {
   document.getElementById('progressFill').style.width = '0%';
-  const cards = decks[currentDeck].cards;
+  const isMine = currentDeck === 'mine';
+  const cards = isMine ? getMineCards() : decks[currentDeck].cards;
   document.getElementById('cardCounter').textContent = `${cards.length} cards`;
   if (!cards.length) { renderEmpty(); return; }
-  const conjugation = isConjugationDeck();
   document.getElementById('mainContent').innerHTML = `
     <div class="browse-list">
       ${cards.map((card, idx) => {
+        const conjugation = isConjugationDeck(card);
         const speakText = conjugation ? (card.ex || card.en) : card.fr;
         const frEsc = JSON.stringify(speakText).replace(/"/g,'&quot;');
+        const editDeck = isMine ? card._sourceDeck : currentDeck;
+        const editIdx = isMine ? card._sourceIdx : idx;
         return `
         <div class="browse-card">
           <div class="browse-fr">${escapeHtml(card.fr)}${card.grammar ? ` <span class="${conjugation ? 'tense-tag' : 'grammar-tag'}">${escapeHtml(card.grammar)}</span>` : ''}</div>
@@ -682,8 +941,8 @@ function renderBrowse() {
           ${card.ex ? `<div class="browse-ex">${escapeHtml(card.ex)}</div>` : ''}
           <div class="browse-actions">
             <button class="icon-btn" onclick="speak(${frEsc}, event)" aria-label="Play">${audioIcon}</button>
-            <button class="icon-btn" onclick="editCard('${currentDeck}', ${idx})" aria-label="Edit">${editIcon}</button>
-            <button class="icon-btn" onclick="deleteCard('${currentDeck}', ${idx})" aria-label="Delete">${trashIcon}</button>
+            <button class="icon-btn" onclick="editCard('${editDeck}', ${editIdx})" aria-label="Edit">${editIcon}</button>
+            <button class="icon-btn" onclick="deleteCard('${editDeck}', ${editIdx})" aria-label="Delete">${trashIcon}</button>
           </div>
         </div>`;
       }).join('')}
@@ -695,8 +954,8 @@ function renderDone() {
   document.getElementById('cardCounter').textContent = `${queue.length} / ${queue.length}`;
   document.getElementById('mainContent').innerHTML = `
     <div class="done-state">
-      <div class="done-icon">🌿</div>
-      <h3>Bien joué !</h3>
+      <div class="done-icon">※</div>
+      <h3>Bien joué.</h3>
       <p>You went through all ${queue.length} cards.</p>
       <button class="btn-restart" onclick="initDeck()">Practice again</button>
     </div>`;
@@ -705,8 +964,8 @@ function renderDone() {
 function renderEmpty() {
   document.getElementById('mainContent').innerHTML = `
     <div class="done-state">
-      <div class="done-icon">✦</div>
-      <h3>No cards yet</h3>
+      <div class="done-icon">·</div>
+      <h3>No cards yet.</h3>
       <p>Add your first card below.</p>
     </div>`;
   document.getElementById('progressFill').style.width = '0%';
@@ -747,7 +1006,7 @@ function openAddForm() {
   document.getElementById('formTitle').textContent = 'New card';
   document.getElementById('saveBtn').textContent = 'Add card';
   populateCategorySelect();
-  document.getElementById('inputCategory').value = currentDeck;
+  document.getElementById('inputCategory').value = decks[currentDeck] ? currentDeck : 'cartes';
   ['inputFrench','inputEnglish','inputExample','inputGrammar'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('addForm').classList.add('open');
   document.getElementById('inputFrench').focus();
