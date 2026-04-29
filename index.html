@@ -3,7 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Cartes de Mots</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mes Mots">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1B1638">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Mes Mots</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,800;0,9..144,900;1,9..144,400;1,9..144,500;1,9..144,600;1,9..144,800;1,9..144,900&family=Manrope:wght@300;400;500;600;700;800&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -34,6 +40,7 @@
   header { text-align: center; margin-bottom: 24px; width: 100%; max-width: 380px; position: relative; }
   .app-title { font-family: 'Fraunces', serif; font-size: 3.4rem; font-weight: 900; font-style: italic; letter-spacing: -0.04em; line-height: 0.95; color: var(--ink); font-variation-settings: "opsz" 144; margin: 4px 0 0; }
   .app-title em { color: var(--pink); font-style: italic; }
+  .app-pronunciation { font-family: 'Fraunces', serif; font-style: italic; font-size: 0.92rem; font-weight: 400; color: var(--pink); margin-top: 6px; letter-spacing: 0.04em; font-variation-settings: "opsz" 24; opacity: 0.85; }
   .memory-btn { position: fixed; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 50; width: 30px; height: 30px; border-radius: 50%; background: transparent; border: 1px solid rgba(27,22,56,0.35); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.25s ease; opacity: 0.45; }
   .memory-btn:hover { opacity: 1; border-color: var(--pink); }
   .memory-btn:hover svg { fill: var(--pink); }
@@ -155,7 +162,8 @@
   <button class="memory-btn" onclick="openMemorySheet()" aria-label="Memory">
     <svg viewBox="0 0 24 24"><path d="M17 3H9c-1.1 0-2 .9-2 2v1H6c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2v-1h1c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H6V8h11v9zm3-3h-1V8c0-1.1-.9-2-2-2H9V5h11v9z"/></svg>
   </button>
-  <div class="app-title">Cartes de <em>Mots</em></div>
+  <div class="app-title">Mes <em>Mots</em></div>
+  <div class="app-pronunciation">/ me-mo /</div>
   <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
   <div class="card-counter" id="cardCounter"></div>
 </header>
@@ -868,7 +876,7 @@ function renderTabs() {
     `<button class="deck-tab ${key===currentDeck?'active':''}" onclick="switchDeck('${key}')">${deck.label}<span class="count">${deck.cards.length}</span></button>`
   ).join('');
   const mineCount = getMineCards().length;
-  const mineTab = `<button class="deck-tab ${currentDeck==='mine'?'active':''}" onclick="switchDeck('mine')">Mes mots<span class="count">${mineCount}</span></button>`;
+  const mineTab = `<button class="deck-tab ${currentDeck==='mine'?'active':''}" onclick="switchDeck('mine')">Ajouts<span class="count">${mineCount}</span></button>`;
   document.getElementById('deckTabs').innerHTML = realTabs + mineTab;
 }
 

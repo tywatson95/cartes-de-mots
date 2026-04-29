@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,144,900&amp;display=swap');
+      text { font-family: 'Fraunces', 'Bodoni 72', 'Didot', 'Times New Roman', serif; }
+    </style>
+  </defs>
+  <rect width="200" height="200" fill="#1B1638"/>
+  <text x="100" y="156" text-anchor="middle"
+        font-size="180" font-weight="900" font-style="italic"
+        fill="#E84A93">M</text>
+</svg>
